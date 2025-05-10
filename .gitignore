@@ -1,0 +1,19 @@
+# Node.js
+node_modules
+dist
+*.log
+pnpm-lock.yaml
+
+# Next.js
+.next
+out
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# OS/Editor
+.DS_Store
+.vscode
+.idea
