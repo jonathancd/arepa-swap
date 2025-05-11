@@ -1,1 +1,1 @@
-# PulseFi\n\nMonorepo Web3 platform: Dashboard, Tools, and Automation.
+# PulseFi Monorepo Web3 platform: Dashboard, Tools, and Automation.
