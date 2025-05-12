@@ -1,5 +1,20 @@
 {
   "compilerOptions": {
-    "types": ["node"]
-  }
+    "target": "esnext",
+    "module": "esnext",
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["apps/dashboard/src/*"],
+      "@hooks/*": ["packages/hooks/src/*"]
+    },
+    "types": ["node"],
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["types"]
 }
