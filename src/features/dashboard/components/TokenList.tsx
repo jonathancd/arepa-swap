@@ -4,19 +4,23 @@ import { useEffect, useState } from "react";
 import { formatUnits } from "ethers";
 import { useWalletStore } from "@/features/wallet/hooks/useWalletStore";
 import { useTokenBalances } from "@/features/dashboard/hooks/useTokenBalances";
+import { CHAIN_REGISTRY } from "@/features/chains/registry/chainRegistry";
 
 export function TokenList() {
-  const { account, chainId, provider } = useWalletStore();
+  const { account, chainId, chainAdapter } = useWalletStore();
   const balances = useTokenBalances(account ?? "", chainId);
-  const [bnbBalance, setBnbBalance] = useState<string | null>(null);
+  const [nativeBalance, setNativeBalance] = useState<string | null>(null);
+
+  if (!chainId) return null;
 
   useEffect(() => {
-    if (!account || !provider || chainId !== 56) return;
+    if (!account || !chainAdapter) return;
 
-    provider.getBalance(account).then((raw) => {
-      setBnbBalance(formatUnits(raw, 18));
-    });
-  }, [account, provider, chainId]);
+    chainAdapter
+      .getProvider()
+      .getBalance(account)
+      .then((raw: bigint) => setNativeBalance(formatUnits(raw, 18)));
+  }, [account, chainAdapter]);
 
   if (!account) {
     return (
@@ -45,10 +49,12 @@ export function TokenList() {
           <p className="text-lg font-semibold">{token.balance}</p>
         </div>
       ))}
-      {chainId === 56 && bnbBalance && (
+      {nativeBalance && (
         <div className="p-4 rounded-xl shadow bg-white dark:bg-zinc-900">
-          <h3 className="text-sm text-muted-foreground">BNB</h3>
-          <p className="text-lg font-semibold">{bnbBalance}</p>
+          <h3 className="text-sm text-muted-foreground">
+            {CHAIN_REGISTRY[chainId]?.nativeSymbol ?? "NATIVE"}
+          </h3>
+          <p className="text-lg font-semibold">{nativeBalance}</p>
         </div>
       )}
     </div>

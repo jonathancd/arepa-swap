@@ -1,0 +1,87 @@
+🛠️ PROPUESTA DE PLAN DE REFACTORIZACIÓN
+🔹 Fase 1 – Modularización y preparación
+ Extraer lógica de conexión a MetaMaskConnector (connect, disconnect, getAccount, etc.)
+
+ Crear interfaz IWalletConnector
+
+ El store useWalletStore solo conoce walletConnector
+
+ Mover TOKENS_BY_CHAIN a un archivo de datos o fuente externa
+
+🔹 Fase 2 – Abstracción por chain
+ Crear archivo chains.ts con metadata de cada red (nombre, ID, nativeTokenSymbol, RPC, etc.)
+
+ Función getNativeTokenSymbol(chainId)
+
+ Refactor TOKENS_BY_CHAIN a TokenService.getTokensByChain(chainId)
+
+🔹 Fase 3 – Estructura y escalabilidad
+ Crear carpeta features/wallet/services/ para conectores y servicios
+
+ Crear features/wallet/types/ para interfaces (IWalletConnector, WalletState, TokenInfo)
+
+ Crear features/wallet/utils/ para helpers
+
+🔹 Fase 4 – Preparar para más conectores
+ Crear conectores base vacíos para WalletConnect y Coinbase
+
+ Agregar selector de wallet en UI (aunque solo funcione MetaMask al inicio)
+
+🔹 Fase 5 – Refactor UI
+ Cambiar dashboard.tsx a wallet.tsx si la función principal es mostrar info de wallet
+
+ Reusar componentes de wallet en otras páginas (staking, swap)
+
+📁 ESTRUCTURA IDEAL FUTURA
+/features
+  /wallet
+    /hooks
+      useWalletStore.ts
+    /services
+      MetaMaskConnector.ts
+      WalletConnectConnector.ts
+      TokenService.ts
+    /types
+      IWalletConnector.ts
+      WalletState.ts
+      TokenInfo.ts
+    /utils
+      networkUtils.ts
+      walletUtils.ts
+    /components
+      WalletInfo.tsx
+      WalletConnectButton.tsx
+
+
+
+
+- Al registrar los adapters en register.. estamos usando Registry Pattern. 
+
+🧠 ¿Qué patrón estamos usando?
+✅ Registry Pattern + Strategy Pattern
+El CHAIN_REGISTRY centraliza la metadata de cada red: es un registro.
+
+Cada red usa un adapter, que implementa una interfaz común (IChainAdapter) con métodos como getNativeBalance: eso es Strategy Pattern, porque cada red puede tener una lógica diferente detrás de la misma interfaz.
+
+Este patrón es común en sistemas donde una acción (como obtener balances) cambia según el contexto (la red).
+
+
+🔍 ¿Es válido? ¿Optimizado? ¿Profesional?
+Sí, y mucho:
+
+✅ Ventajas de este enfoque:
+Criterio	Cumple
+Escalable	Agregar una nueva red = añadir en CHAIN_REGISTRY
+Declarativo	Todas las redes están definidas de forma clara y central
+Separación de responsabilidades	Los adapters sólo implementan lógica técnica; el registro controla metadata
+Extensible	Puedes añadir RPC personalizados, contratos, block explorer, sin romper nada
+IDE-friendly	TypeScript lo puede inferir y ayudar con errores y autocompletado
+
+Esto es lo que usaría un equipo como PancakeSwap.
+
+
+🧩 ¿Dónde deben vivir las propiedades como chainId, name, nativeSymbol?
+🔥 Recomendación de nivel profesional:
+Dejar toda la metadata (incluyendo name, chainId, nativeSymbol) en el CHAIN_REGISTRY.
+
+Y que los adapters sean tontos y reutilizables. Su única responsabilidad es ejecutar lógica blockchain para esa red.

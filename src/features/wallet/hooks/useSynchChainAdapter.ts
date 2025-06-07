@@ -1,35 +1,18 @@
 import { useEffect } from "react";
-import { useConnectorManager } from "./useConnectorManager";
-import { EthereumAdapter } from "@/features/chains/adapters/EthereumAdapter";
-import { BSCAdapter } from "@/features/chains/adapters/BSCAdapter";
-import { switchToNetwork } from "../utils/switchToNetwork";
+import { useWalletStore } from "./useWalletStore";
+import { CHAIN_REGISTRY } from "@/features/chains/registry/chainRegistry";
 
 export function useSyncChainAdapter() {
-  const {
-    selectedChainId,
-    setChainAdapter,
-    isConnected,
-    connectWallet,
-    walletConnector,
-  } = useConnectorManager();
+  const { selectedChainId, setChainAdapter } = useWalletStore();
 
   useEffect(() => {
-    const sync = async () => {
-      await switchToNetwork(selectedChainId);
+    console.log("aja en useSynchChainAdapter...");
+    const adapterFactory = CHAIN_REGISTRY[selectedChainId]?.adapter;
 
-      if (selectedChainId === 1) {
-        setChainAdapter(new EthereumAdapter());
-      } else if (selectedChainId === 56) {
-        setChainAdapter(new BSCAdapter());
-      } else {
-        setChainAdapter(null);
-      }
-
-      if (isConnected && walletConnector) {
-        await connectWallet();
-      }
-    };
-
-    sync();
-  }, [selectedChainId]);
+    if (adapterFactory) {
+      setChainAdapter(adapterFactory());
+    } else {
+      console.log("No adapter registered for selected chain", selectedChainId);
+    }
+  }, [selectedChainId, setChainAdapter]);
 }

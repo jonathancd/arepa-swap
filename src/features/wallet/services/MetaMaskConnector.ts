@@ -17,19 +17,43 @@ export class MetaMaskConnector implements IWalletConnector {
    * connect = () => { ... } // propiedad en la instancia
    */
   async connect() {
+    console.log("Connect in MetaMaskConnector");
     if (!window.ethereum) {
       alert("MetaMask is not installed!");
       return;
     }
 
-    this.provider = new ethers.BrowserProvider(window.ethereum);
+    try {
+      this.provider = new ethers.BrowserProvider(window.ethereum);
 
-    const accounts = await this.provider.send("eth_requestAccounts", []);
-    const network = await this.provider.getNetwork();
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
 
-    this.account = accounts[0];
-    this.chainId = Number(network.chainId);
-    this.signer = await this.provider.getSigner();
+      const network = await this.provider.getNetwork();
+
+      this.account = accounts[0];
+      this.chainId = Number(network.chainId);
+      this.signer = await this.provider.getSigner();
+    } catch (error: any) {
+      if (error.code === -32002) {
+        console.warn("MetaMask is already processing a connection request.");
+        alert("MetaMask is already connecting. Please check your wallet.");
+        return;
+      }
+
+      console.error("Failed to connect to MetaMask", error);
+      throw error;
+    }
+
+    // this.provider = new ethers.BrowserProvider(window.ethereum);
+
+    // const accounts = await this.provider.send("eth_requestAccounts", []);
+    // const network = await this.provider.getNetwork();
+
+    // this.account = accounts[0];
+    // this.chainId = Number(network.chainId);
+    // this.signer = await this.provider.getSigner();
   }
 
   disconnect() {

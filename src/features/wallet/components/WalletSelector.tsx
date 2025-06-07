@@ -1,6 +1,6 @@
 "use client";
 
-import { useConnectorManager } from "../hooks/useConnectorManager";
+import { useWalletStore } from "../hooks/useWalletStore";
 import { MetaMaskConnector } from "../services/MetaMaskConnector";
 import { useEthereumEvents } from "../hooks/useEthereumEvents";
 import { useSyncChainAdapter } from "../hooks/useSynchChainAdapter";
@@ -18,9 +18,10 @@ export function WalletSelector() {
     connectWallet,
     disconnectWallet,
     setWalletConnector,
-  } = useConnectorManager();
+  } = useWalletStore();
 
   const handleConnect = async () => {
+    console.log("handleConnect in WalletSelector");
     const connector = new MetaMaskConnector();
     setWalletConnector(connector);
     await connectWallet(); // Ya se encarga de usar el chainAdapter actual

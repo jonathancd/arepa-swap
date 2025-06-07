@@ -1,40 +1,78 @@
 import { useEffect } from "react";
-import { useConnectorManager } from "./useConnectorManager";
-import { EthereumAdapter } from "@/features/chains/adapters/EthereumAdapter";
-import { BSCAdapter } from "@/features/chains/adapters/BSCAdapter";
+import { useWalletStore } from "./useWalletStore";
+import { CHAIN_REGISTRY } from "@/features/chains/registry/chainRegistry";
+import { IChainAdapter } from "@/features/chains/types/IChainAdapter";
+import { getSafeEthereum } from "../helpers/getSafeEthereum";
 
 export function useEthereumEvents() {
   const { account, isConnected, setSelectedChainId, setChainAdapter } =
-    useConnectorManager();
+    useWalletStore();
 
   useEffect(() => {
-    if (typeof window === "undefined" || !window.ethereum) return;
+    const ethereum = getSafeEthereum();
+    if (!ethereum) return;
 
-    const handleChainChanged = async (chainIdHex: string) => {
+    const handleChainChanged = (chainIdHex: string) => {
       const newChainId = parseInt(chainIdHex, 16);
-      console.log("MetaMask manually changed to chaing: ", newChainId);
+      console.log("MetaMask changed to chain:", newChainId);
 
       setSelectedChainId(newChainId);
 
-      if (newChainId === 1) {
-        setChainAdapter(new EthereumAdapter());
-      } else if (newChainId === 56) {
-        setChainAdapter(new BSCAdapter());
-      } else {
-        console.log("No adapter configured for this chain: ", newChainId);
-        setChainAdapter(null);
+      const adapterFactory = CHAIN_REGISTRY[newChainId]?.adapter;
+      if (adapterFactory) {
+        setChainAdapter(adapterFactory());
       }
-
-      // we can reset the account for security reassons
-      if (!account || !isConnected) return;
-
-      // MetaMask should keep the connection, we can keep showing the data
     };
 
-    window.ethereum.on("chainChanged", handleChainChanged);
+    ethereum.on("chainChanged", handleChainChanged);
 
     return () => {
-      window.ethereum.removeListener("chainChanged", handleChainChanged);
+      ethereum.removeListener("chainChanged", handleChainChanged);
     };
-  }, [account, isConnected, setChainAdapter, setSelectedChainId]);
+  }, [setSelectedChainId, setChainAdapter]);
+
+  // useEffect(() => {
+  //   const ethereum = getSafeEthereum();
+
+  //   if (!ethereum) return;
+
+  //   const handleChainChanged = async (chainIdHex: string) => {
+  //     console.log("handleChainChanged en useEthereumEvents");
+  //     const newChainId = parseInt(chainIdHex, 16);
+  //     console.log("MetaMask manually changed to chaing: ", newChainId);
+
+  //     setSelectedChainId(newChainId);
+
+  //     const adapterFactory = CHAIN_REGISTRY[newChainId]?.adapter;
+
+  //     /**
+  //      *
+  //      * Type annotation con declaración sin inicialización.
+  //      * Es muy común cuando:
+  //      *    Vas a usar la variable más adelante.
+  //      *    Solo quieres restringir los posibles valores (IChainAdapter o undefined).
+  //      *    Te estás preparando para asignar condicionalmente.
+  //      */
+  //     let adapter: IChainAdapter | null;
+
+  //     if (adapterFactory) {
+  //       adapter = adapterFactory();
+  //       setChainAdapter(adapter);
+  //     } else {
+  //       console.log("No adapter registered for this chain", newChainId);
+  //       return;
+  //     }
+
+  //     // we can reset the account for security reassons
+  //     if (!account || !isConnected) return;
+
+  //     // MetaMask should keep the connection, we can keep showing the data
+  //   };
+
+  //   ethereum.on("chainChanged", handleChainChanged);
+
+  //   return () => {
+  //     ethereum.removeListener("chainChanged", handleChainChanged);
+  //   };
+  // }, [account, isConnected, setChainAdapter, setSelectedChainId]);
 }

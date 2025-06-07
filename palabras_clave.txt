@@ -1,0 +1,17 @@
+EVM
+
+Registry Pattern
+
+carpetas lib
+
+Server Functions (Route Handlers) que se colocan dentro de app/api/
+
+Usa CoinGecko para precios y metadatos de tokens.
+Usa Moralis para obtener balances reales por wallet.
+
+
+
+Eso ocurre porque estás intentando usar el hook useWalletStore() fuera de un componente React o custom hook. useWalletStore() es un hook de Zustand, y solo se puede usar dentro de componentes o hooks personalizados, no en funciones asíncronas puras o en código fuera del ciclo de renderizado React.
+
+🧨 ¿Por qué falla silenciosamente?
+Next.js y React no arrojan un error explícito aquí, pero la ejecución se detiene o falla internamente cuando un hook es invocado fuera de contexto. Por eso tus console.log() posteriores ya no se ejecutan.
