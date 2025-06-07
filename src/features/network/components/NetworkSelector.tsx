@@ -1,10 +1,10 @@
 "use client";
 
 import {
-  getSupportedNetworks,
-  findNetworkById,
   findNetworkByHex,
-} from "../lib/NetworkRegistry";
+  findNetworkById,
+  getSupportedNetworks,
+} from "../utils/networkUtils";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";

@@ -7,7 +7,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { BrowserProvider, formatEther } from "ethers";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";

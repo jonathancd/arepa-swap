@@ -7,7 +7,7 @@ import {
 import {
   getChainNameById,
   getEvmChainById,
-} from "@/features/network/utils/chainUtils";
+} from "@/features/network/utils/networkUtils";
 import Moralis from "moralis";
 
 export async function GET(req: NextRequest) {
