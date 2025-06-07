@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { EvmChain } from "@moralisweb3/common-evm-utils";
 import { initMoralis } from "@/lib/initMoralis";
+import {
+  enrichWithQuote,
+  isSuspiciousToken,
+  normalizeToken,
+} from "@/features/token/adapters/tokenAdapter";
+import { fetchTokenPrice } from "@/features/token/utils/fetchTokenPrice";
 import Moralis from "moralis";
 
 export async function GET(req: NextRequest) {
@@ -20,21 +26,13 @@ export async function GET(req: NextRequest) {
       polygon: EvmChain.POLYGON,
     };
 
+    // 1. Obtener balances de cada red
     const results = await Promise.allSettled(
-      Object.entries(chains).map(([name, chain]) =>
+      Object.entries(chains).map(([network, chain]) =>
         Moralis.EvmApi.token
           .getWalletTokenBalances({ address, chain })
           .then((res) =>
-            res.toJSON().map((token) => ({
-              contract_address: token.token_address,
-              contract_name: token.name,
-              contract_ticker_symbol: token.symbol,
-              logo_url: token.logo || "",
-              decimals: token.decimals,
-              balance:
-                Number(token.balance) / Math.pow(10, token.decimals || 18),
-              network: name,
-            }))
+            res.toJSON().map((rawToken) => normalizeToken(rawToken, network))
           )
       )
     );
@@ -43,60 +41,37 @@ export async function GET(req: NextRequest) {
       .filter((result) => result.status === "fulfilled")
       .flatMap((result) => (result.status === "fulfilled" ? result.value : []));
 
-    const filtered = allTokens.filter((token) => token.balance > 0);
+    const filtered = allTokens.filter(
+      (token) => token.balance > 0 && !isSuspiciousToken(token)
+    );
 
-    // Obtener precios en paralelo
+    // 2. Obtener precios
     const priceResults = await Promise.allSettled(
       filtered.map((token) =>
-        Moralis.EvmApi.token
-          .getTokenPrice({
-            address: token.contract_address,
-            chain: chains[token.network],
-          })
-          .then((res) => ({
-            token_address: token.contract_address,
-            usdPrice: res.toJSON().usdPrice || 0,
-          }))
-          .catch(() => ({
-            token_address: token.contract_address,
-            usdPrice: 0,
-          }))
+        fetchTokenPrice(token.contract_address, chains[token.network])
       )
     );
 
     const priceMap = Object.fromEntries(
-      priceResults
-        .filter((r) => r.status === "fulfilled")
-        .map((r: any) => [
-          r.value.token_address.toLowerCase(),
-          r.value.usdPrice,
-        ])
+      filtered.map((token, index) => [
+        token.contract_address.toLowerCase(),
+        priceResults[index].status === "fulfilled"
+          ? priceResults[index].value
+          : 0,
+      ])
     );
 
-    // Funciones de control de calidad
-    const isSuspiciousToken = (token: any) =>
-      !token.logo_url ||
-      token.contract_name.toLowerCase().includes(".org") ||
-      token.contract_ticker_symbol.toLowerCase().includes(".org");
-
-    const isSuspiciousQuote = (quote: number) =>
-      !Number.isFinite(quote) || quote < 0 || quote > 10_000;
-
     const enriched = filtered
-      .map((token) => {
-        const price = priceMap[token.contract_address.toLowerCase()] || 0;
-        const quote = token.balance * price;
+      .map((token) =>
+        enrichWithQuote(token, priceMap[token.contract_address.toLowerCase()])
+      )
+      .filter((t) => t.quote !== null && t.quote > 0);
 
-        return {
-          ...token,
-          quote: isSuspiciousQuote(quote) ? null : quote,
-          is_suspicious:
-            isSuspiciousToken(token) || isSuspiciousQuote(quote) || price === 0,
-        };
-      })
-      .filter((token) => typeof token.quote === "number" && token.quote > 0);
-
-    const totalUSD = enriched.reduce((acc, t) => acc + (t.quote ?? 0), 0);
+    // 4. Calcular total en USD
+    const totalUSD = enriched.reduce(
+      (sum, token) => sum + (token.quote ?? 0),
+      0
+    );
 
     return NextResponse.json({
       tokens: enriched,
