@@ -23,24 +23,27 @@ export default function Navbar() {
   });
 
   useEffect(() => {
+    console.log("entra en el useEffect");
+    const lastProvider = localStorage.getItem("wallet-provider");
+    if (!lastProvider) return;
+
+    const connected = wallets.find(
+      (w) => w.id === lastProvider && w.isAvailable()
+    );
+    if (!connected) return;
+
     const fetchAccountInfo = async () => {
-      console.log("accountsChanged o chainChanged");
-      const connected = wallets.find((w) => w.isAvailable());
-      if (connected && window.ethereum) {
+      console.log("Restoring wallet session...");
+      if (window.ethereum) {
         const acc = await connected.getAccount();
         const provider = new BrowserProvider(window.ethereum);
         const bal = acc ? await provider.getBalance(acc) : null;
-        // setAccount(acc);
-        console.log({ account, acc });
-        if (account !== acc) {
-          setAccount(acc);
-        }
 
+        setAccount(acc);
         setBalance(bal ? parseFloat(formatEther(bal)).toFixed(4) : null);
-      } else {
-        disconnectWallet();
       }
     };
+
     fetchAccountInfo();
 
     if (window.ethereum) {
@@ -54,7 +57,8 @@ export default function Navbar() {
         window.ethereum.removeListener("chainChanged", fetchAccountInfo);
       }
     };
-  }, [wallets, disconnectWallet, setAccount, setBalance]);
+  }, [wallets]); // los metodos del store no cambian de referencia asi que no es necesario colocarlos como dependencias.
+  // en desarrollo el useEffect se dispara dos veces.
 
   return (
     <header

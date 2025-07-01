@@ -42,21 +42,28 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
   connectWallet: async (walletId) => {
     const wallet = get().wallets.find((w) => w.id === walletId);
+
     if (!wallet || !wallet.isAvailable()) return;
 
     await wallet.connect();
     const acc = await wallet.getAccount();
     const provider = new BrowserProvider(window.ethereum);
     const bal = acc ? await provider.getBalance(acc) : null;
+    console.log("provider", provider);
 
     set({
       connectedWallet: wallet,
       account: acc,
       balance: bal ? parseFloat(formatEther(bal)).toFixed(4) : null,
     });
+
+    console.log("seteando en el localStorage...", wallet.id);
+    localStorage.setItem("wallet-provider", wallet.id);
   },
   disconnectWallet: () => {
     set({ connectedWallet: null, account: null, balance: null });
+    console.log("disconnect wallet...");
+    localStorage.removeItem("wallet-provider");
   },
   registerWallet: (wallet) =>
     set((state) => {

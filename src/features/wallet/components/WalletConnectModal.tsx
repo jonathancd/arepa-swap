@@ -21,25 +21,22 @@ export function WalletConnectModal({
   open,
   onOpenChange,
 }: WalletConnectModalProps) {
-  const { wallets, setAccount, setBalance, setConnectedWallet } =
+  const { wallets, connectWallet, setAccount, setBalance, setConnectedWallet } =
     useWalletStore();
 
   const handleConnect = async (walletId: string) => {
-    const wallet = wallets.find((w) => w.id === walletId);
-    if (!wallet) return;
-    await wallet.connect();
-    const acc = await wallet.getAccount();
-    const provider = new BrowserProvider(window.ethereum);
-    const bal = acc ? await provider.getBalance(acc) : null;
-    setAccount(acc);
-    setBalance(bal ? parseFloat(formatEther(bal)).toFixed(4) : null);
-    setConnectedWallet(wallet);
+    await connectWallet(walletId);
     onOpenChange(false);
-
-    // const dialog = document.getElementById(
-    //   "wallet-dialog-close"
-    // ) as HTMLButtonElement;
-    // dialog?.click();
+    // const wallet = wallets.find((w) => w.id === walletId);
+    // if (!wallet) return;
+    // await wallet.connect();
+    // const acc = await wallet.getAccount();
+    // const provider = new BrowserProvider(window.ethereum);
+    // const bal = acc ? await provider.getBalance(acc) : null;
+    // setAccount(acc);
+    // setBalance(bal ? parseFloat(formatEther(bal)).toFixed(4) : null);
+    // setConnectedWallet(wallet);
+    // onOpenChange(false);
   };
 
   return (
