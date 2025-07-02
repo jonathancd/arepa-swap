@@ -27,16 +27,6 @@ export function WalletConnectModal({
   const handleConnect = async (walletId: string) => {
     await connectWallet(walletId);
     onOpenChange(false);
-    // const wallet = wallets.find((w) => w.id === walletId);
-    // if (!wallet) return;
-    // await wallet.connect();
-    // const acc = await wallet.getAccount();
-    // const provider = new BrowserProvider(window.ethereum);
-    // const bal = acc ? await provider.getBalance(acc) : null;
-    // setAccount(acc);
-    // setBalance(bal ? parseFloat(formatEther(bal)).toFixed(4) : null);
-    // setConnectedWallet(wallet);
-    // onOpenChange(false);
   };
 
   return (

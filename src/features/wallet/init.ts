@@ -1,6 +1,6 @@
 import { useWalletStore } from "./stores/walletStore";
-import { MetaMaskWallet } from "./lib/providers/MetaMaskWallet";
-import { WalletConnectWallet } from "./lib/providers/WalletConnectWallet";
+import { MetaMaskAdapter } from "./lib/wallets/MetaMaskAdapter";
+import { WalletConnectAdapter } from "./lib/wallets/WalletConnectAdapter";
 
 let initialized = false;
 
@@ -9,6 +9,6 @@ export function initWallets() {
   initialized = true;
 
   const { registerWallet } = useWalletStore.getState();
-  registerWallet(new MetaMaskWallet());
-  registerWallet(new WalletConnectWallet());
+  registerWallet(new MetaMaskAdapter());
+  registerWallet(new WalletConnectAdapter());
 }
