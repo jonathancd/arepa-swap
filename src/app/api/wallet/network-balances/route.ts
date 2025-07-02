@@ -4,25 +4,28 @@ import {
   normalizeToken,
   isSuspiciousToken,
 } from "@/features/token/adapters/tokenAdapter";
-import {
-  getChainNameById,
-  getEvmChainById,
-} from "@/features/network/utils/networkUtils";
+import { findEvmNetworkById } from "@/features/evm/utils/evmNetworkUtils";
 import Moralis from "moralis";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const address = searchParams.get("address");
-  const chainId = searchParams.get("chainId");
+  const addressParam = searchParams.get("address");
+  const chainIdParam = searchParams.get("chainId");
 
-  if (!address || !chainId) {
+  if (!addressParam || !chainIdParam) {
     return NextResponse.json(
       { error: "Missing address or chainId" },
       { status: 400 }
     );
   }
 
-  const chain = getEvmChainById(chainId);
+  const chainId = Number(chainIdParam);
+
+  if (Number.isNaN(chainId)) {
+    return NextResponse.json({ error: "Invalid chainId" }, { status: 400 });
+  }
+
+  const chain = findEvmNetworkById(chainId);
   if (!chain) {
     return NextResponse.json({ error: "Unsupported chain" }, { status: 400 });
   }
@@ -31,15 +34,14 @@ export async function GET(req: NextRequest) {
     await initMoralis();
 
     const response = await Moralis.EvmApi.token.getWalletTokenBalances({
-      address,
-      chain,
+      address: addressParam,
+      chain: chainIdParam,
     });
 
     const rawTokens = response.toJSON();
-    const network = getChainNameById(chainId);
 
     const tokens = rawTokens
-      .map((token) => normalizeToken(token, network))
+      .map((token) => normalizeToken(token, chain.name))
       .filter((token) => token.balance > 0 && !isSuspiciousToken(token));
 
     return NextResponse.json({ tokens });
