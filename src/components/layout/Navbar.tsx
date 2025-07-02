@@ -33,7 +33,6 @@ export default function Navbar() {
     if (!connected) return;
 
     const fetchAccountInfo = async () => {
-      console.log("Restoring wallet session...");
       if (window.ethereum) {
         const acc = await connected.getAccount();
         const provider = new BrowserProvider(window.ethereum);

@@ -1,10 +1,12 @@
 "use client";
 
 import {
-  findNetworkByHex,
   findNetworkById,
   getSupportedNetworks,
-} from "../utils/networkUtils";
+} from "@/features/network/utils/networkUtils";
+
+import { findEvmNetworkByHex } from "@/features/evm/utils/evmNetworkUtils";
+
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -29,7 +31,7 @@ export function NetworkSelector() {
     setSelectedNetwork(defaultNetwork);
 
     const handleChainChanged = (chainId: string) => {
-      const matched = findNetworkByHex(chainId);
+      const matched = findEvmNetworkByHex(chainId);
       if (matched) setSelectedNetwork(matched);
     };
 
