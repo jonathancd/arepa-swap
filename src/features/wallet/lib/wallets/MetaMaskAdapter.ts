@@ -27,6 +27,7 @@
 //   }
 // }
 
+import { BrowserProvider, formatEther } from "ethers";
 import { BaseWalletProvider } from "../providers/BaseWalletProvider";
 import { Protocol } from "@/features/protocols/constants/Protocol";
 
@@ -56,6 +57,16 @@ export class MetaMaskAdapter extends BaseWalletProvider {
   async getAccount(): Promise<string | null> {
     const accounts = await window.ethereum?.request({ method: "eth_accounts" });
     return accounts?.[0] || null;
+  }
+
+  async getBalance(account: string): Promise<string | null> {
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      const rawBalance = await provider.getBalance(account);
+      return parseFloat(formatEther(rawBalance)).toFixed(4);
+    } catch {
+      return null;
+    }
   }
 
   async getNetwork(): Promise<string | null> {

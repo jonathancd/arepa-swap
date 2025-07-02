@@ -15,8 +15,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { account, wallets, disconnectWallet, setAccount, setBalance } =
-    useWalletStore();
+  const { account, wallets, setAccount, setBalance } = useWalletStore();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setScrolled(latest > 10);

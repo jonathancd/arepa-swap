@@ -21,8 +21,7 @@ export function WalletConnectModal({
   open,
   onOpenChange,
 }: WalletConnectModalProps) {
-  const { wallets, connectWallet, setAccount, setBalance, setConnectedWallet } =
-    useWalletStore();
+  const { wallets, connectWallet } = useWalletStore();
 
   const handleConnect = async (walletId: string) => {
     await connectWallet(walletId);
