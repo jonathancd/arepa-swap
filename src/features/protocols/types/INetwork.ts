@@ -1,4 +1,4 @@
-import { IEvmNetwork } from "@/features/evm/types/IEvmNetwork";
+import { IEvmNetwork } from "../evm/types/IEvmNetwork";
 
 export type INetwork = IEvmNetwork; // Expand later with | SolanaNetwork | BitcoinNetwork etc.
 

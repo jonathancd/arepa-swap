@@ -1,12 +1,5 @@
 "use client";
 
-import {
-  findNetworkById,
-  getSupportedNetworks,
-} from "@/features/network/utils/networkUtils";
-
-import { findEvmNetworkByHex } from "@/features/evm/utils/evmNetworkUtils";
-
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -19,16 +12,21 @@ import { Button } from "@/components/ui/button";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
 import { fetchNetworkTokens } from "@/features/wallet/utils/fetchNetworkTokens";
+import { getDefaultNetworkByProtocol } from "@/features/protocols/utils/protocolsUtils";
+import { findEvmNetworkByHex } from "@/features/protocols/evm/utils/evmNetworkUtils";
+import { useAvailableNetworks } from "../hooks/useAvailableNetworks";
 
 export function NetworkSelector() {
-  const networks = getSupportedNetworks();
-  const defaultNetwork = networks[0]; // Ethereum by default
+  const networks = useAvailableNetworks();
   const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
-
-  const { account, wallets, setNetworkTokenBalances } = useWalletStore();
+  const { account, protocol, wallets, setNetworkTokenBalances } =
+    useWalletStore();
 
   useEffect(() => {
-    setSelectedNetwork(defaultNetwork);
+    if (!selectedNetwork && protocol) {
+      const defaultNetwork = getDefaultNetworkByProtocol(protocol);
+      if (defaultNetwork) setSelectedNetwork(defaultNetwork);
+    }
 
     const handleChainChanged = (chainId: string) => {
       const matched = findEvmNetworkByHex(chainId);
@@ -40,11 +38,15 @@ export function NetworkSelector() {
     }
 
     return () => {
-      if (window.ethereum?.removeListener) {
-        window.ethereum.removeListener("chainChanged", handleChainChanged);
-      }
+      window.ethereum?.removeListener("chainChanged", handleChainChanged);
     };
-  }, []);
+
+    // return () => {
+    //   if (window.ethereum?.removeListener) {
+    //     window.ethereum.removeListener("chainChanged", handleChainChanged);
+    //   }
+    // };
+  }, [selectedNetwork, protocol]);
 
   useEffect(() => {
     if (account && selectedNetwork) {
@@ -54,8 +56,10 @@ export function NetworkSelector() {
     }
   }, [account, selectedNetwork]);
 
+  // if (networks.length === 0) return null;
+
   const handleSelect = async (networkId: number) => {
-    const network = findNetworkById(networkId);
+    const network = networks.find((n) => n.id === networkId);
     if (!network) return;
 
     const connected = wallets.find((w) => w.isAvailable());
@@ -74,6 +78,7 @@ export function NetworkSelector() {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
+          protocol: {protocol} ---
           {selectedNetwork && (
             <>
               <Image

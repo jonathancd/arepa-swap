@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { BaseWalletProvider } from "../lib/providers/BaseWalletProvider";
-import { BrowserProvider, formatEther } from "ethers";
 import { Protocol } from "@/features/protocols/constants/Protocol";
 
 interface TokenBalance {
@@ -38,25 +37,6 @@ interface WalletStore {
   setOverviewTokenBalances: (tokens: TokenBalance[]) => void;
   setOverviewTotalUSD: (total: number) => void;
 }
-
-// interface WalletStore {
-//   account: string | null;
-//   balance: string | null;
-//   connectedWallet: BaseWalletProvider | null;
-//   networkTokenBalances: TokenBalance[]; // solo los tokens de la red activa
-//   overviewTokenBalances: TokenBalance[]; // tokens de todas las redes
-//   overviewTotalUSD: number;
-//   wallets: BaseWalletProvider[];
-//   connectWallet: (walletId: string) => Promise<void>;
-//   disconnectWallet: () => void;
-//   registerWallet: (wallet: BaseWalletProvider) => void;
-//   setAccount: (account: string | null) => void;
-//   setBalance: (balance: string | null) => void;
-//   setConnectedWallet: (connectedWallet: BaseWalletProvider | null) => void;
-//   setNetworkTokenBalances: (tokens: TokenBalance[]) => void;
-//   setOverviewTokenBalances: (tokens: TokenBalance[]) => void;
-//   setOverviewTotalUSD: (total: number) => void;
-// }
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
   connectedWallet: null,
@@ -109,7 +89,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       balance: null,
       protocol: null,
     });
-    console.log("disconnect wallet...");
+
     localStorage.removeItem("wallet-provider");
   },
   registerWallet: (wallet) =>

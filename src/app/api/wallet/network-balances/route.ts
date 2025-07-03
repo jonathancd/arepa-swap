@@ -4,7 +4,7 @@ import {
   normalizeToken,
   isSuspiciousToken,
 } from "@/features/token/adapters/tokenAdapter";
-import { findEvmNetworkById } from "@/features/evm/utils/evmNetworkUtils";
+import { findEvmNetworkById } from "@/features/protocols/evm/utils/evmNetworkUtils";
 import Moralis from "moralis";
 
 export async function GET(req: NextRequest) {
