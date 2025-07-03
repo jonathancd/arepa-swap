@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { WalletConnectModal } from "@/features/wallet/components/WalletConnectModal";
 import { NetworkSelector } from "@/features/network/components/NetworkSelector";
 import { WalletStatusPopover } from "@/features/wallet/components/WalletStatusPopover";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { BrowserProvider, formatEther } from "ethers";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 
 export default function Navbar() {
@@ -15,50 +14,11 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { account, wallets, setAccount, setBalance, setProtocol } =
-    useWalletStore();
+  const { account } = useWalletStore();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setScrolled(latest > 10);
   });
-
-  useEffect(() => {
-    console.log("entra en el useEffect");
-    const lastProvider = localStorage.getItem("wallet-provider");
-    if (!lastProvider) return;
-
-    const connected = wallets.find(
-      (w) => w.id === lastProvider && w.isAvailable()
-    );
-    if (!connected) return;
-
-    const fetchAccountInfo = async () => {
-      if (window.ethereum) {
-        const acc = await connected.getAccount();
-        const provider = new BrowserProvider(window.ethereum);
-        const bal = acc ? await provider.getBalance(acc) : null;
-
-        setAccount(acc);
-        setBalance(bal ? parseFloat(formatEther(bal)).toFixed(4) : null);
-        setProtocol(connected.protocol);
-      }
-    };
-
-    fetchAccountInfo();
-
-    if (window.ethereum) {
-      window.ethereum.on("accountsChanged", fetchAccountInfo);
-      window.ethereum.on("chainChanged", fetchAccountInfo);
-    }
-
-    return () => {
-      if (window.ethereum?.removeListener) {
-        window.ethereum.removeListener("accountsChanged", fetchAccountInfo);
-        window.ethereum.removeListener("chainChanged", fetchAccountInfo);
-      }
-    };
-  }, [wallets]); // los metodos del store no cambian de referencia asi que no es necesario colocarlos como dependencias.
-  // en desarrollo el useEffect se dispara dos veces.
 
   return (
     <header
@@ -80,9 +40,6 @@ export default function Navbar() {
           </Link>
           <Link href="/staking" className="hover:text-primary">
             Staking
-          </Link>
-          <Link href="/tools/security-check" className="hover:text-primary">
-            Security
           </Link>
         </div>
 

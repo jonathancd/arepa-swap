@@ -22,6 +22,9 @@ import { ReactNode } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { initWallets } from "@/features/wallet/init";
+import { useRestoreWallet } from "@/features/wallet/hooks/useRestoreWallet";
+import { useSyncNetworkWithWallet } from "@/features/network/hooks/useSyncNetworkWithWallet";
+import { useWalletOverview } from "@/features/wallet/hooks/useWalletOverview";
 
 export default function RootLayout({
   children,
@@ -29,6 +32,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   initWallets();
+  useRestoreWallet();
+  useWalletOverview();
+  useSyncNetworkWithWallet();
 
   return (
     <html lang="en">

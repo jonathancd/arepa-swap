@@ -1,11 +1,14 @@
-export async function fetchWalletBalances(
+export async function fetchWalletOverview(
   address: string,
+  protocol: string,
   setOverviewTokenBalances: (tokens: any[]) => void,
   setOverviewTotalUSD: (amount: number) => void
 ) {
   try {
     console.log("Haciendo llamada a la api...");
-    const response = await fetch(`/api/wallet/overview?address=${address}`);
+    const response = await fetch(
+      `/api/wallet/overview?address=${address}&protocol=${protocol}`
+    );
     const data = await response.json();
     if (data.error) {
       console.error("Error fetching balances: ", data.error);

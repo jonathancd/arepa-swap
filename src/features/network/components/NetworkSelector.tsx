@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import {
@@ -11,52 +10,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
-import { fetchNetworkTokens } from "@/features/wallet/utils/fetchNetworkTokens";
-import { getDefaultNetworkByProtocol } from "@/features/protocols/utils/protocolsUtils";
-import { findEvmNetworkByHex } from "@/features/protocols/evm/utils/evmNetworkUtils";
 import { useAvailableNetworks } from "../hooks/useAvailableNetworks";
 
 export function NetworkSelector() {
   const networks = useAvailableNetworks();
   const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
-  const { account, protocol, wallets, setNetworkTokenBalances } =
-    useWalletStore();
+  const { wallets } = useWalletStore();
 
-  useEffect(() => {
-    if (!selectedNetwork && protocol) {
-      const defaultNetwork = getDefaultNetworkByProtocol(protocol);
-      if (defaultNetwork) setSelectedNetwork(defaultNetwork);
-    }
-
-    const handleChainChanged = (chainId: string) => {
-      const matched = findEvmNetworkByHex(chainId);
-      if (matched) setSelectedNetwork(matched);
-    };
-
-    if (window.ethereum) {
-      window.ethereum.on("chainChanged", handleChainChanged);
-    }
-
-    return () => {
-      window.ethereum?.removeListener("chainChanged", handleChainChanged);
-    };
-
-    // return () => {
-    //   if (window.ethereum?.removeListener) {
-    //     window.ethereum.removeListener("chainChanged", handleChainChanged);
-    //   }
-    // };
-  }, [selectedNetwork, protocol]);
-
-  useEffect(() => {
-    if (account && selectedNetwork) {
-      fetchNetworkTokens(account, selectedNetwork.id.toString()).then(
-        setNetworkTokenBalances
-      );
-    }
-  }, [account, selectedNetwork]);
-
-  // if (networks.length === 0) return null;
+  if (networks.length === 0) return null;
 
   const handleSelect = async (networkId: number) => {
     const network = networks.find((n) => n.id === networkId);
@@ -78,7 +39,6 @@ export function NetworkSelector() {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
-          protocol: {protocol} ---
           {selectedNetwork && (
             <>
               <Image

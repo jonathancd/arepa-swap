@@ -1,4 +1,4 @@
 export enum Protocol {
   EVM = "evm",
-  SOLANA = "solana",
+  // SOLANA = "solana",
 }

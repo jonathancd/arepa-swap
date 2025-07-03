@@ -20,7 +20,6 @@ interface WalletStore {
   account: string | null;
   balance: string | null;
 
-  networkTokenBalances: TokenBalance[];
   overviewTokenBalances: TokenBalance[];
   overviewTotalUSD: number;
 
@@ -33,7 +32,6 @@ interface WalletStore {
   setConnectedWallet: (wallet: BaseWalletProvider | null) => void;
   setProtocol: (protocol: Protocol | null) => void;
 
-  setNetworkTokenBalances: (tokens: TokenBalance[]) => void;
   setOverviewTokenBalances: (tokens: TokenBalance[]) => void;
   setOverviewTotalUSD: (total: number) => void;
 }
@@ -46,7 +44,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   account: "",
   balance: "",
 
-  networkTokenBalances: [],
   overviewTokenBalances: [],
   overviewTotalUSD: 0,
 
@@ -103,7 +100,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   setBalance: (balance) => set({ balance }),
   setConnectedWallet: (connectedWallet) => set({ connectedWallet }),
   setProtocol: (protocol) => set({ protocol }),
-  setNetworkTokenBalances: (tokens) => set({ networkTokenBalances: tokens }),
   setOverviewTokenBalances: (tokens) => set({ overviewTokenBalances: tokens }),
   setOverviewTotalUSD: (total) => set({ overviewTotalUSD: total }),
 }));
