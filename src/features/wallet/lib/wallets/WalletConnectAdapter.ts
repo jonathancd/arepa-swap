@@ -8,8 +8,8 @@ let provider: EthereumProvider | null = null;
 export class WalletConnectAdapter extends BaseWalletProvider {
   id = "walletconnect";
   name = "WalletConnect";
-  icon = "/icons/walletconnect.svg";
-  group = "top" as const;
+  icon = "/icons/wallets/walletconnect.svg";
+  group = "more" as const;
 
   isAvailable(): boolean {
     return true; // Siempre disponible, no depende de extensión

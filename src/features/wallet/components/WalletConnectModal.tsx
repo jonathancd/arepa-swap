@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { BrowserProvider, formatEther } from "ethers";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import Image from "next/image";
 
@@ -38,7 +37,7 @@ export function WalletConnectModal({
       <DialogContent className="max-w-md">
         <DialogTitle>Connect your wallet</DialogTitle>
         <div className="space-y-4">
-          <div className="text-xl font-semibold">Connect your wallet</div>
+          {/* <div className="text-xl font-semibold">Connect your wallet</div> */}
           <div className="grid grid-cols-2 gap-4">
             {wallets.map((wallet) => (
               <Button
