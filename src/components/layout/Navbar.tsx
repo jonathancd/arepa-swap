@@ -31,7 +31,7 @@ export default function Navbar() {
           ArepaSwap
         </div>
 
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+        {/* <div className="hidden md:flex items-center gap-6 text-sm font-medium">
           <Link href="/swap" className="hover:text-primary">
             Swap
           </Link>
@@ -41,7 +41,7 @@ export default function Navbar() {
           <Link href="/staking" className="hover:text-primary">
             Staking
           </Link>
-        </div>
+        </div> */}
 
         <div className="flex items-center gap-4">
           <NetworkSelector />
@@ -49,9 +49,25 @@ export default function Navbar() {
             <WalletStatusPopover />
           ) : (
             <>
-              <Button onClick={() => setModalOpen(true)} size="sm">
+              {/* <Button onClick={() => setModalOpen(true)} size="sm">
                 Connect Wallet
-              </Button>
+              </Button> */}
+              {/* <div className="bg-background text-text p-4 rounded-2xl shadow-card">
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="bg-primary hover:bg-primaryHover text-black font-semibold px-4 py-2 rounded-xl"
+                >
+                  Connect Wallet
+                </button>
+              </div> */}
+              <div className="bg-[var(--background)] text-[var(--foreground)]">
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-black px-4 py-2 rounded-xl"
+                >
+                  Connect Wallet
+                </button>
+              </div>
               <WalletConnectModal
                 open={modalOpen}
                 onOpenChange={setModalOpen}
