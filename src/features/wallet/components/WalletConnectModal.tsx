@@ -66,7 +66,7 @@ export function WalletConnectModal({
           <div className="w-full md:w-1/2 p-6">
             {!selectedWallet && (
               <div className="flex flex-col justify-center h-full text-center text-gray-400">
-                <p className="mb-2 text-sm">Haven’t got a wallet yet?</p>
+                <p className="mb-2 text-sm">Haven't got a wallet yet?</p>
                 <a
                   href="https://ethereum.org/en/wallets/"
                   target="_blank"

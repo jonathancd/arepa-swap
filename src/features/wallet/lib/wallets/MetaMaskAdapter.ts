@@ -1,6 +1,8 @@
 import { BrowserProvider, formatEther } from "ethers";
 import { BaseWalletProvider } from "../providers/BaseWalletProvider";
 import { Protocol } from "@/features/protocols/constants/Protocol";
+import { findEvmNetworkByHex } from "@/features/protocols/evm/utils/evmNetworkUtils";
+import { IEvmNetwork } from "@/features/protocols/evm/types/IEvmNetwork";
 
 declare global {
   interface Window {
@@ -14,6 +16,9 @@ export class MetaMaskAdapter extends BaseWalletProvider {
   icon = "/icons/wallets/metamask.svg";
   group = "top" as const;
   protocol = Protocol.EVM;
+
+  private _onAccountChanged?: (acc: string) => void;
+  private _onChainChanged?: () => void;
 
   isAvailable(): boolean {
     return (
@@ -40,9 +45,9 @@ export class MetaMaskAdapter extends BaseWalletProvider {
     }
   }
 
-  async getNetwork(): Promise<string | null> {
+  async getNetwork(): Promise<IEvmNetwork | null> {
     const chainId = await window.ethereum?.request({ method: "eth_chainId" });
-    return chainId || null;
+    return findEvmNetworkByHex(chainId || "") || null;
   }
 
   async switchNetwork(chainIdHex: string): Promise<void> {
@@ -53,6 +58,31 @@ export class MetaMaskAdapter extends BaseWalletProvider {
       });
     } catch (error) {
       console.error("Network switch failed:", error);
+    }
+  }
+
+  onAccountChanged(handler: (acc: string) => void): void {
+    this._onAccountChanged = handler;
+    window.ethereum?.on("accountsChanged", (accounts: string[]) => {
+      handler(accounts[0]);
+    });
+  }
+
+  onChainChanged(handler: () => void): void {
+    this._onChainChanged = handler;
+    window.ethereum?.on("chainChanged", handler);
+  }
+
+  offListeners(): void {
+    if (this._onAccountChanged) {
+      window.ethereum?.removeListener(
+        "accountsChanged",
+        this._onAccountChanged
+      );
+    }
+
+    if (this._onChainChanged) {
+      window.ethereum?.removeListener("chainChanged", this._onChainChanged);
     }
   }
 }

@@ -2,6 +2,7 @@ import { BaseWalletProvider } from "../providers/BaseWalletProvider";
 import EthereumProvider from "@walletconnect/ethereum-provider";
 import { EvmNetworkRegistry } from "@/features/protocols/evm/constants/evmNetworkRegistry";
 import { Protocol } from "@/features/protocols/constants/Protocol";
+import { IBaseNetwork } from "@/features/protocols/types/IBaseNetwork";
 
 let provider: EthereumProvider | null = null;
 
@@ -46,9 +47,11 @@ export class WalletConnectAdapter extends BaseWalletProvider {
     return provider.accounts[0];
   }
 
-  async getNetwork(): Promise<string | null> {
-    if (!provider) return null;
-    return `0x${provider.chainId?.toString(16)}`; // hex string
+  // Change imlementation
+  async getNetwork(): Promise<IBaseNetwork | null> {
+    return null;
+    // if (!provider) return null;
+    // return `0x${provider.chainId?.toString(16)}`; // hex string
   }
 
   async switchNetwork(chainIdHex: string): Promise<void> {

@@ -1,9 +1,11 @@
 import { useEffect } from "react";
-import { BrowserProvider, formatEther } from "ethers";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
+import { useNetworkStore } from "@/features/network/stores/networkStore";
 
 export function useRestoreWallet() {
-  const { wallets, setAccount, setBalance, setProtocol } = useWalletStore();
+  const { setSelectedNetwork } = useNetworkStore();
+  const { wallets, setAccount, setBalance, setConnectedWallet, setProtocol } =
+    useWalletStore();
 
   useEffect(() => {
     console.log("entra en el useEffect");
@@ -17,24 +19,29 @@ export function useRestoreWallet() {
 
     const fetchAccountInfo = async () => {
       const acc = await connected.getAccount();
-      const provider = new BrowserProvider(window.ethereum);
-      const bal = acc ? await provider.getBalance(acc) : null;
+      const bal = acc ? await connected.getBalance(acc) : null;
+      const net = await connected.getNetwork?.();
 
       setAccount(acc);
-      setBalance(bal ? parseFloat(formatEther(bal)).toFixed(4) : null);
+      setBalance(bal);
       setProtocol(connected.protocol);
+      setConnectedWallet(connected);
+
+      if (net) setSelectedNetwork(net);
     };
 
     fetchAccountInfo();
 
-    if (window.ethereum) {
-      window.ethereum.on("accountsChanged", fetchAccountInfo);
-      window.ethereum.on("chainChanged", fetchAccountInfo);
-    }
+    connected.onAccountChanged?.(() => {
+      fetchAccountInfo();
+    });
+
+    connected.onChainChanged?.(() => {
+      fetchAccountInfo();
+    });
 
     return () => {
-      window.ethereum?.removeListener("accountsChanged", fetchAccountInfo);
-      window.ethereum?.removeListener("chainChanged", fetchAccountInfo);
+      connected.offListeners?.();
     };
   }, [wallets]);
 
