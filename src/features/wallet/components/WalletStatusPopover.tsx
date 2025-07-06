@@ -8,9 +8,8 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWalletStore } from "../stores/walletStore";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ClipboardCopy, LogOut } from "lucide-react";
-import { fetchWalletBalances } from "../utils/fetchWalletBalances";
 import Image from "next/image";
 
 export function WalletStatusPopover() {
@@ -20,8 +19,6 @@ export function WalletStatusPopover() {
     overviewTokenBalances,
     overviewTotalUSD,
     disconnectWallet,
-    setOverviewTokenBalances,
-    setOverviewTotalUSD,
   } = useWalletStore();
 
   const [open, setOpen] = useState(false);
@@ -39,17 +36,6 @@ export function WalletStatusPopover() {
     disconnectWallet();
     setOpen(false);
   };
-
-  useEffect(() => {
-    if (account) {
-      console.log("aqui?");
-      fetchWalletBalances(
-        account,
-        setOverviewTokenBalances,
-        setOverviewTotalUSD
-      );
-    }
-  }, [account]);
 
   if (!account) return null;
 

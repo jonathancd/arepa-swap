@@ -1,0 +1,10 @@
+Wallet	        Navegador	Soporte window.ethereum	    WalletConnect	Nivel de Integración	Comentario
+MetaMask	    ✔️	        ✔️	                        ❌	         🟢 Muy fácil	     Ya implementada, ideal base
+Brave Wallet	✔️	        ✔️	                        ❌	         🟢 Muy fácil	     misma lógica que MetaMask
+Coinbase Wallet	✔️	        ✔️	                        ✔️	          🟢 Fácil	          Compatible vía SDK o WalletConnect
+Trust Wallet	❌	       ❌	                      ✔️	        🟠 Medio	        Solo vía WalletConnect
+OKX Wallet	    ✔️	        ✔️	                        ✔️	          🟠 Medio	          Tiene window.okxwallet y WC
+Binance Web3	❌	       ❌	                      ✔️	        🟠 Medio	        Solo en app móvil (no extensión)
+Opera Wallet	✔️	        ✔️	                        ❌	         🟢 Fácil	         Similar a Brave (EVM + integrado)
+WalletConnect	✨ puente   ✨ protocolo	              ✔️	        🟢 Fácil	        Conecta Trust, Coinomi, Binance, OKX, 
+Coinomi	        ❌	       ❌	                      ✔️	        🟠 Medio	        Solo vía WalletConnect

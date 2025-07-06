@@ -1,0 +1,11 @@
+🎨 Paleta base ArepaSwap (modo oscuro)
+Uso	                        Color	             Hex
+Fondo principal	            Dark Charcoal	    #121212
+Fondo secundario	        Almost Black	    #1C1C1E
+Texto principal	            Light Gray	        #E0E0E0
+Texto secundario	        Muted Gray	        #A0A0A0
+Botón / Primario	        Golden Yellow	    #FFD700
+Hover botón	                Dark Gold	        #E6C200
+Color terciario (resaltado)	Sky Blue	        #38BDF8
+Error / Crítico	            Coral Red	        #FF4C4C
+Éxito / Confirmación	    Emerald Green	    #34D399

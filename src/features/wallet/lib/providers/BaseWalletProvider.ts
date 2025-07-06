@@ -1,32 +1,22 @@
-import { IWalletProvider } from "../../types/IWalletProvider";
+import { Protocol } from "@/features/protocols/constants/Protocol";
+import { IBaseNetwork } from "@/features/protocols/types/IBaseNetwork";
+import { INetwork } from "@/features/protocols/types/INetwork";
 
-export abstract class BaseWalletProvider implements IWalletProvider {
+export abstract class BaseWalletProvider {
   abstract id: string;
   abstract name: string;
   abstract icon: string;
   abstract group: "main" | "top" | "more";
+  abstract protocol: Protocol;
 
   abstract isAvailable(): boolean;
   abstract connect(): Promise<void>;
+  abstract getAccount(): Promise<string | null>;
+  abstract getBalance(account: string): Promise<string | null>;
+  abstract getNetwork(): Promise<INetwork | null>;
+  abstract switchNetwork(chainId: string): Promise<void>;
 
-  async getAccount(): Promise<string | null> {
-    const accounts = await window.ethereum?.request({ method: "eth_accounts" });
-    return accounts?.[0] || null;
-  }
-
-  async getNetwork(): Promise<string | null> {
-    const chainId = await window.ethereum?.request({ method: "eth_chainId" });
-    return chainId || null;
-  }
-
-  async switchNetwork(chainIdHex: string): Promise<void> {
-    try {
-      await window.ethereum?.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: chainIdHex }],
-      });
-    } catch (error) {
-      console.error("Network switch failed:", error);
-    }
-  }
+  onAccountChanged?(cb: (acc: string) => void): void;
+  onChainChanged?(cb: () => void): void;
+  offListeners?(): void;
 }

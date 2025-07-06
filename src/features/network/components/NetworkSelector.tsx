@@ -1,13 +1,5 @@
 "use client";
 
-import {
-  findNetworkById,
-  getSupportedNetworks,
-} from "@/features/network/utils/networkUtils";
-
-import { findEvmNetworkByHex } from "@/features/evm/utils/evmNetworkUtils";
-
-import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import {
@@ -18,44 +10,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
-import { fetchNetworkTokens } from "@/features/wallet/utils/fetchNetworkTokens";
+import { useAvailableNetworks } from "../hooks/useAvailableNetworks";
 
 export function NetworkSelector() {
-  const networks = getSupportedNetworks();
-  const defaultNetwork = networks[0]; // Ethereum by default
+  const networks = useAvailableNetworks();
   const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
+  const { wallets } = useWalletStore();
 
-  const { account, wallets, setNetworkTokenBalances } = useWalletStore();
-
-  useEffect(() => {
-    setSelectedNetwork(defaultNetwork);
-
-    const handleChainChanged = (chainId: string) => {
-      const matched = findEvmNetworkByHex(chainId);
-      if (matched) setSelectedNetwork(matched);
-    };
-
-    if (window.ethereum) {
-      window.ethereum.on("chainChanged", handleChainChanged);
-    }
-
-    return () => {
-      if (window.ethereum?.removeListener) {
-        window.ethereum.removeListener("chainChanged", handleChainChanged);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (account && selectedNetwork) {
-      fetchNetworkTokens(account, selectedNetwork.id.toString()).then(
-        setNetworkTokenBalances
-      );
-    }
-  }, [account, selectedNetwork]);
+  if (networks.length === 0) return null;
 
   const handleSelect = async (networkId: number) => {
-    const network = findNetworkById(networkId);
+    const network = networks.find((n) => n.id === networkId);
     if (!network) return;
 
     const connected = wallets.find((w) => w.isAvailable());

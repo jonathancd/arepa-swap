@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { INetwork } from "../types/INetwork";
+import { INetwork } from "@/features/protocols/types/INetwork";
 
 type NetworkStore = {
   selectedNetwork: INetwork | null;

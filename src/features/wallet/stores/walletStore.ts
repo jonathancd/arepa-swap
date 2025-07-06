@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { BaseWalletProvider } from "../lib/providers/BaseWalletProvider";
-import { BrowserProvider, formatEther } from "ethers";
+import { Protocol } from "@/features/protocols/constants/Protocol";
 
 interface TokenBalance {
   contract_address: string;
@@ -13,56 +13,80 @@ interface TokenBalance {
 }
 
 interface WalletStore {
+  wallets: BaseWalletProvider[];
+  connectedWallet: BaseWalletProvider | null;
+  protocol: Protocol | null; // Nuevo: para saber si es EVM o Solana
+
   account: string | null;
   balance: string | null;
-  connectedWallet: BaseWalletProvider | null;
-  networkTokenBalances: TokenBalance[]; // solo los tokens de la red activa
-  overviewTokenBalances: TokenBalance[]; // tokens de todas las redes
+
+  overviewTokenBalances: TokenBalance[];
   overviewTotalUSD: number;
-  wallets: BaseWalletProvider[];
+
+  registerWallet: (wallet: BaseWalletProvider) => void;
   connectWallet: (walletId: string) => Promise<void>;
   disconnectWallet: () => void;
-  registerWallet: (wallet: BaseWalletProvider) => void;
+
   setAccount: (account: string | null) => void;
   setBalance: (balance: string | null) => void;
-  setConnectedWallet: (connectedWallet: BaseWalletProvider | null) => void;
-  setNetworkTokenBalances: (tokens: TokenBalance[]) => void;
+  setConnectedWallet: (wallet: BaseWalletProvider | null) => void;
+  setProtocol: (protocol: Protocol | null) => void;
+
   setOverviewTokenBalances: (tokens: TokenBalance[]) => void;
   setOverviewTotalUSD: (total: number) => void;
 }
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
+  connectedWallet: null,
+  protocol: null,
+  wallets: [],
+
   account: "",
   balance: "",
-  connectedWallet: null,
-  wallets: [],
-  networkTokenBalances: [],
+
   overviewTokenBalances: [],
   overviewTotalUSD: 0,
 
   connectWallet: async (walletId) => {
     const wallet = get().wallets.find((w) => w.id === walletId);
-
     if (!wallet || !wallet.isAvailable()) return;
 
     await wallet.connect();
-    const acc = await wallet.getAccount();
-    const provider = new BrowserProvider(window.ethereum);
-    const bal = acc ? await provider.getBalance(acc) : null;
-    console.log("provider", provider);
+    const account = await wallet.getAccount();
+    const protocol = wallet.protocol;
+    const balance = account ? await wallet.getBalance(account) : null;
+
+    // Antes se calculaba el balance directamente aquí según el protocolo.
+    // Eso violaba el principio de Inversión de Dependencias (D de SOLID),
+    // ya que este store (módulo de alto nivel) dependía de lógica de bajo nivel (EVM, ethers).
+    // Ahora se delega al adapter correspondiente con `wallet.getBalance(account)`,
+    // lo que permite mantener el store desacoplado del protocolo.
+
+    // let balance: string | null = null;
+    // // EVM: obtener balance con ethers
+    // if (protocol === Protocol.EVM && account) {
+    //   const provider = new BrowserProvider(window.ethereum);
+    //   const rawBalance = await provider.getBalance(account);
+    //   balance = parseFloat(formatEther(rawBalance)).toFixed(4);
+    // }
 
     set({
       connectedWallet: wallet,
-      account: acc,
-      balance: bal ? parseFloat(formatEther(bal)).toFixed(4) : null,
+      protocol,
+      account,
+      balance,
     });
 
-    console.log("seteando en el localStorage...", wallet.id);
     localStorage.setItem("wallet-provider", wallet.id);
   },
   disconnectWallet: () => {
-    set({ connectedWallet: null, account: null, balance: null });
-    console.log("disconnect wallet...");
+    set({
+      connectedWallet: null,
+      account: null,
+      balance: null,
+      protocol: null,
+    });
+
     localStorage.removeItem("wallet-provider");
   },
   registerWallet: (wallet) =>
@@ -75,7 +99,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   setAccount: (account) => set({ account }),
   setBalance: (balance) => set({ balance }),
   setConnectedWallet: (connectedWallet) => set({ connectedWallet }),
-  setNetworkTokenBalances: (tokens) => set({ networkTokenBalances: tokens }),
+  setProtocol: (protocol) => set({ protocol }),
   setOverviewTokenBalances: (tokens) => set({ overviewTokenBalances: tokens }),
   setOverviewTotalUSD: (total) => set({ overviewTotalUSD: total }),
 }));
