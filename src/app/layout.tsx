@@ -26,6 +26,7 @@ import { useRestoreWallet } from "@/features/wallet/hooks/useRestoreWallet";
 import { useSyncNetworkWithWallet } from "@/features/network/hooks/useSyncNetworkWithWallet";
 import { useWalletOverview } from "@/features/wallet/hooks/useWalletOverview";
 import { ThemeProvider } from "next-themes";
+import { NetworkSelectorModal } from "@/features/network/components/NetworkSelectorModal";
 
 export default function RootLayout({
   children,
@@ -43,6 +44,7 @@ export default function RootLayout({
       <body className="flex flex-col min-h-screen bg-background text-foreground ">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
+          <NetworkSelectorModal />
           <main className="flex-1 p-4">{children}</main>
           <Footer />
         </ThemeProvider>
