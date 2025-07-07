@@ -148,3 +148,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .hover\:bg-primary-hover:hover {
+    background-color: var(--primary-hover);
+  }
+}
