@@ -27,6 +27,7 @@ import { useSyncNetworkWithWallet } from "@/features/network/hooks/useSyncNetwor
 import { useWalletOverview } from "@/features/wallet/hooks/useWalletOverview";
 import { ThemeProvider } from "next-themes";
 import { NetworkSelectorModal } from "@/features/network/components/NetworkSelectorModal";
+import { WalletOverviewDrawer } from "@/features/wallet/components/WalletOverviewDrawer";
 
 export default function RootLayout({
   children,
@@ -45,6 +46,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
           <NetworkSelectorModal />
+          <WalletOverviewDrawer />
           <main className="flex-1 p-4">{children}</main>
           <Footer />
         </ThemeProvider>

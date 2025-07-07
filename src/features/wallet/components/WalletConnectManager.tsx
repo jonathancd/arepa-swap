@@ -2,10 +2,10 @@
 
 import { useWalletStore } from "../stores/walletStore";
 import { ConnectWalletButton } from "./ConnectWalletButton";
-import { WalletOverview } from "./WalletOverview";
+import { WalletAddressButton } from "./WalletAddressButton";
 
 export function WalletConnectManager() {
   const { account } = useWalletStore();
 
-  return account ? <WalletOverview /> : <ConnectWalletButton />;
+  return account ? <WalletAddressButton /> : <ConnectWalletButton />;
 }

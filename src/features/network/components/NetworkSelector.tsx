@@ -7,7 +7,6 @@ import { useWalletStore } from "@/features/wallet/stores/walletStore";
 
 export function NetworkSelector() {
   const { account } = useWalletStore();
-
   const { selectedNetwork, openNetworkModal } = useNetworkStore();
 
   if (!account || !selectedNetwork) return;

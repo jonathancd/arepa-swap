@@ -44,7 +44,6 @@ export function NetworkSelectorModal() {
             <motion.button
               key={net.id}
               onClick={() => handleSelect(net.id)}
-              whileHover={{ scale: 1.02 }}
               className="flex items-center gap-3 p-3 rounded-lg border border-border bg-surface hover:bg-muted transition-colors"
             >
               <Image src={net.icon} alt={net.name} width={24} height={24} />

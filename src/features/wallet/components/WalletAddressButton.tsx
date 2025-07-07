@@ -3,24 +3,30 @@
 import { Button } from "@/components/ui/button";
 import { useWalletStore } from "../stores/walletStore";
 
-type Props = {
-  ref?: React.Ref<HTMLButtonElement>;
-} & React.ComponentPropsWithoutRef<"button">;
+// type Props = {
+//   ref?: React.Ref<HTMLButtonElement>;
+// } & React.ComponentPropsWithoutRef<"button">;
+// ref
 
-export function WalletAddressButton({ ref, ...props }: Props) {
-  const { account } = useWalletStore();
+export function WalletAddressButton({ ...props }) {
+  const { account, connectedWallet, isOverviewModalOpen, openOverviewModal } =
+    useWalletStore();
 
   if (!account) return null;
 
   return (
     <Button
-      ref={ref}
+      onClick={openOverviewModal}
       variant="outline"
       size="sm"
       className="font-mono"
       {...props}
     >
-      {account.slice(0, 2)}...{account.slice(-4)}
+      {connectedWallet?.icon && (
+        <img src={connectedWallet.icon} alt="Wallet" className="w-5 h-5" />
+      )}
+      {account.slice(0, 2)}...{account.slice(-4)} -{" "}
+      {isOverviewModalOpen ? 1 : 2}
     </Button>
   );
 }
