@@ -1,7 +1,6 @@
 "use client";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -87,13 +86,13 @@ export function WalletConnectModal({
                   connect.
                 </p>
                 <a
-                  href={
-                    selectedWallet.installUrl ||
-                    "https://ethereum.org/en/wallets/"
-                  }
                   target="_blank"
                   className="bg-yellow-400 text-black px-4 py-2 rounded-md text-sm hover:bg-yellow-300"
                 >
+                  {/* href={
+                    selectedWallet.installUrl ||
+                    "https://ethereum.org/en/wallets/"
+                  } */}
                   Install
                 </a>
               </div>

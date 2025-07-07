@@ -25,6 +25,7 @@ import { initWallets } from "@/features/wallet/init";
 import { useRestoreWallet } from "@/features/wallet/hooks/useRestoreWallet";
 import { useSyncNetworkWithWallet } from "@/features/network/hooks/useSyncNetworkWithWallet";
 import { useWalletOverview } from "@/features/wallet/hooks/useWalletOverview";
+import { ThemeProvider } from "next-themes";
 
 export default function RootLayout({
   children,
@@ -37,12 +38,14 @@ export default function RootLayout({
   useSyncNetworkWithWallet();
 
   return (
-    <html lang="en">
+    <html lang="en" suppressContentEditableWarning>
       {/* className={`${geistSans.variable} ${geistMono.variable} antialiased bg-red-50`} */}
       <body className="flex flex-col min-h-screen bg-background text-foreground ">
-        <Navbar />
-        <main className="flex-1 p-4">{children}</main>
-        <Footer />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Navbar />
+          <main className="flex-1 p-4">{children}</main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -15,7 +15,9 @@ import { useAvailableNetworks } from "../hooks/useAvailableNetworks";
 export function NetworkSelector() {
   const networks = useAvailableNetworks();
   const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
-  const { wallets } = useWalletStore();
+  const { account, wallets } = useWalletStore();
+
+  if (!account) return;
 
   if (networks.length === 0) return null;
 
