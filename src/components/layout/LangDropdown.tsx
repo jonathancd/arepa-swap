@@ -14,11 +14,12 @@ export function LangDropdown() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          variant="ghost"
           size="icon"
           aria-label="Language"
-          className="cursor-pointer hover:opacity-[0.6]"
+          className="bg-background cursor-pointer hover:opacity-[0.6]"
         >
-          <Globe className="w-5 h-5 text-black" />
+          <Globe className="w-5 h-5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
