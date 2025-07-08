@@ -18,7 +18,7 @@ export function WalletAddressButton({ ...props }) {
       onClick={openOverviewModal}
       variant="outline"
       size="sm"
-      className="font-mono"
+      className="font-mono cursor-pointer hover:opacity-[0.6]"
       {...props}
     >
       {connectedWallet?.icon && (

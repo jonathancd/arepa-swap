@@ -9,7 +9,8 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@radix-ui/react-dialog";
-import { XIcon } from "lucide-react";
+import { LogOut, XIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function WalletOverviewDrawer() {
   const { isOverviewModalOpen, closeOverviewModal } = useWalletStore();
@@ -31,7 +32,7 @@ export function WalletOverviewDrawer() {
 
           <DialogClose asChild>
             <button
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground cursor-pointer"
               aria-label="Close wallet overview"
             >
               <XIcon className="h-5 w-5" />
@@ -39,8 +40,11 @@ export function WalletOverviewDrawer() {
           </DialogClose>
         </div>
         <div className="px-4 pt-4">
-          <DialogDescription>
-            View your assets and wallet details in this drawer.
+          <DialogDescription className="text-xs text-center pb-4">
+            This represents the overview of assets in your wallet.
+            <Button size="sm" variant="destructive" className="gap-2">
+              <LogOut className="w-4 h-4 mr-1" />
+            </Button>
           </DialogDescription>
           <WalletOverviewContent onClose={closeOverviewModal} />
         </div>

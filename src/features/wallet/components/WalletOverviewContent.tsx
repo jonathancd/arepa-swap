@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWalletStore } from "../stores/walletStore";
 import { useState } from "react";
-import { ClipboardCopy, LogOut } from "lucide-react";
+import { Copy, LogOut } from "lucide-react";
 import Image from "next/image";
 
 export function WalletOverviewContent({ onClose }: { onClose: () => void }) {
@@ -45,16 +45,27 @@ export function WalletOverviewContent({ onClose }: { onClose: () => void }) {
               width={24}
             />
           )}
-          <span className="font-mono text-sm">
+          <span className="font-mono text-base text-primary">
             {account?.slice(0, 6)}...{account?.slice(-4)}
           </span>
-          <Button size="icon" variant="ghost" onClick={copyToClipboard}>
-            <ClipboardCopy className="w-4 h-4" />
+          <Button
+            size="icon"
+            variant="ghost"
+            className="hover:opacity-[0.6]"
+            title="Copy address"
+            onClick={copyToClipboard}
+          >
+            <Copy className="w-4 h-4" />
           </Button>
         </div>
-        <Button onClick={disconnect} size="sm" variant="destructive">
-          <LogOut className="w-4 h-4 mr-1" /> Disconnect
-        </Button>
+        {/* <Button
+          onClick={disconnect}
+          size="sm"
+          variant="destructive"
+          className="gap-2"
+        >
+          <LogOut className="w-4 h-4 mr-1" />
+        </Button> */}
       </div>
 
       <div className="text-2xl font-bold">${overviewTotalUSD.toFixed(2)}</div>

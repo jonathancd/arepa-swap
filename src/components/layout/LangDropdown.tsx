@@ -13,7 +13,11 @@ export function LangDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="icon" aria-label="Language">
+        <Button
+          size="icon"
+          aria-label="Language"
+          className="cursor-pointer hover:opacity-[0.6]"
+        >
           <Globe className="w-5 h-5 text-black" />
         </Button>
       </DropdownMenuTrigger>

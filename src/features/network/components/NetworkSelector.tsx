@@ -13,9 +13,9 @@ export function NetworkSelector() {
 
   return (
     <Button
-      variant="outline"
       onClick={openNetworkModal}
-      className="flex items-center gap-2"
+      variant="outline"
+      className="flex items-center gap-2 cursor-pointer hover:opacity-[0.6]"
     >
       <Image
         src={selectedNetwork.icon}
