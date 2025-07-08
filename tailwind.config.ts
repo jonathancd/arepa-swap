@@ -1,30 +1,22 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // Para soportar modo oscuro controlado por clase `.dark`
   darkMode: "class",
 
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
 
   theme: {
+    borderRadius: {
+      DEFAULT: "var(--radius)",
+      sm: "calc(var(--radius) - 4px)",
+      md: "calc(var(--radius) - 2px)",
+      lg: "var(--radius)",
+      xl: "calc(var(--radius) + 4px)",
+      full: "9999px", // opcional, por si usas rounded-full
+    },
     extend: {
-      colors: {
-        background: "#121212", // Fondo principal
-        surface: "#1C1C1E", // Fondo secundario
-        text: "#E0E0E0", // Texto principal
-        muted: "#A0A0A0", // Texto secundario
-        primary: "#FFD700", // Botón / Primario
-        primaryHover: "#E6C200", // Hover botón
-        highlight: "#38BDF8", // Color terciario (resaltado)
-        error: "#FF4C4C", // Error / Crítico
-        success: "#34D399", // Éxito / Confirmación
-      },
-      borderRadius: {
-        xl: "1rem",
-        "2xl": "1.5rem",
-      },
-      boxShadow: {
-        card: "0 4px 20px rgba(0, 0, 0, 0.2)",
-      },
+      // Aquí va el resto de tu extend (colors, spacing, etc.)
     },
   },
 

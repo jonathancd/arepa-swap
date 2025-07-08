@@ -58,6 +58,7 @@ export function WalletOverviewContent({ onClose }: { onClose: () => void }) {
       </div>
 
       <div className="text-2xl font-bold">${overviewTotalUSD.toFixed(2)}</div>
+      <div className="text-2xl font-bold">My Wallet</div>
 
       <Tabs defaultValue="wallet" className="w-full">
         <TabsList className="grid grid-cols-2">

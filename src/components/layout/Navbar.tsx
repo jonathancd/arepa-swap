@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ConnectWalletButton } from "@/features/wallet/components/ConnectWalletButton";
 import { ModeToggle } from "./ModeToggle";
 import { LangDropdown } from "./LangDropdown";
 import { MobileMenu } from "./MobileMenu";
@@ -10,7 +9,7 @@ import { WalletConnectManager } from "@/features/wallet/components/WalletConnect
 
 export default function Navbar() {
   return (
-    <header className="w-full border-b border-border bg-background">
+    <header className="w-full border-b border-primary bg-surface">
       <nav className="flex items-center justify-between px-4 py-3 md:px-8 md:py-4 max-w-7xl mx-auto">
         {/* Logo / Title */}
         <Link
@@ -22,8 +21,8 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-2">
-          <LangDropdown />
           <ModeToggle />
+          <LangDropdown />
           <NetworkSelector />
           <WalletConnectManager />
         </div>

@@ -9,8 +9,7 @@ import { useWalletStore } from "../stores/walletStore";
 // ref
 
 export function WalletAddressButton({ ...props }) {
-  const { account, connectedWallet, isOverviewModalOpen, openOverviewModal } =
-    useWalletStore();
+  const { account, connectedWallet, openOverviewModal } = useWalletStore();
 
   if (!account) return null;
 
@@ -25,8 +24,7 @@ export function WalletAddressButton({ ...props }) {
       {connectedWallet?.icon && (
         <img src={connectedWallet.icon} alt="Wallet" className="w-5 h-5" />
       )}
-      {account.slice(0, 2)}...{account.slice(-4)} -{" "}
-      {isOverviewModalOpen ? 1 : 2}
+      {account.slice(0, 2)}...{account.slice(-4)}
     </Button>
   );
 }
