@@ -4,11 +4,10 @@ import { useNetworkStore } from "@/features/network/stores/networkStore";
 
 export function useRestoreWallet() {
   const { setSelectedNetwork } = useNetworkStore();
-  const { wallets, setAccount, setBalance, setConnectedWallet, setProtocol } =
+  const { wallets, setAccount, setConnectedWallet, setProtocol } =
     useWalletStore();
 
   useEffect(() => {
-    console.log("entra en el useEffect");
     const lastProvider = localStorage.getItem("wallet-provider");
     if (!lastProvider) return;
 
@@ -19,11 +18,9 @@ export function useRestoreWallet() {
 
     const fetchAccountInfo = async () => {
       const acc = await connected.getAccount();
-      const bal = acc ? await connected.getBalance(acc) : null;
       const net = await connected.getNetwork?.();
 
       setAccount(acc);
-      setBalance(bal);
       setProtocol(connected.protocol);
       setConnectedWallet(connected);
 

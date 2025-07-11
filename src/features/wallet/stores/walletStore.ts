@@ -68,7 +68,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
     await wallet.connect();
     const account = await wallet.getAccount();
     const protocol = wallet.protocol;
-    const balance = account ? await wallet.getBalance(account) : null;
 
     // Antes se calculaba el balance directamente aquí según el protocolo.
     // Eso violaba el principio de Inversión de Dependencias (D de SOLID),
@@ -88,7 +87,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       connectedWallet: wallet,
       protocol,
       account,
-      balance,
     });
 
     localStorage.setItem("wallet-provider", wallet.id);

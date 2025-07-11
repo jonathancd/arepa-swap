@@ -21,6 +21,7 @@ import { ThemeProvider } from "next-themes";
 import { WalletOverviewDrawer } from "@/features/wallet/components/drawers/WalletOverviewDrawer";
 import { WalletConnectDialog } from "@/features/wallet/components/modals/WalletConnectDialog";
 import { NetworkSelectorManager } from "@/features/network/components/manager/NetworkSelectorManager";
+import { useWalletBalanceSync } from "@/features/wallet/hooks/useWalletBalanceSync";
 
 const sourGummy = Sour_Gummy({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default function RootLayout({
   initWallets();
   useRestoreWallet();
   useWalletOverview();
+  useWalletBalanceSync();
   useSyncNetworkWithWallet();
 
   return (
