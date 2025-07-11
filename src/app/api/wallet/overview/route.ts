@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const addressParam = searchParams.get("address");
   const protocolParam = searchParams.get("protocol");
-
+  console.log("si llega la peticion");
   if (!addressParam || !protocolParam) {
     return NextResponse.json(
       { error: "Missing address or protocol" },

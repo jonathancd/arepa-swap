@@ -23,7 +23,9 @@ interface WalletStore {
   overviewTokenBalances: TokenBalance[];
   overviewTotalUSD: number;
 
+  isConnectModalOpen: boolean;
   isOverviewModalOpen: boolean;
+  isOverviewLoading: boolean;
 
   registerWallet: (wallet: BaseWalletProvider) => void;
   connectWallet: (walletId: string) => Promise<void>;
@@ -39,6 +41,9 @@ interface WalletStore {
 
   closeOverviewModal: () => void;
   openOverviewModal: () => void;
+
+  setIsConnectModalOpen: (value: boolean) => void;
+  setIsOverviewLoading: (value: boolean) => void;
 }
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
@@ -52,7 +57,9 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   overviewTokenBalances: [],
   overviewTotalUSD: 0,
 
+  isConnectModalOpen: false,
   isOverviewModalOpen: false,
+  isOverviewLoading: false,
 
   connectWallet: async (walletId) => {
     const wallet = get().wallets.find((w) => w.id === walletId);
@@ -111,4 +118,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   setOverviewTotalUSD: (total) => set({ overviewTotalUSD: total }),
   closeOverviewModal: () => set({ isOverviewModalOpen: false }),
   openOverviewModal: () => set({ isOverviewModalOpen: true }),
+  setIsConnectModalOpen: (value: boolean) => set({ isConnectModalOpen: value }),
+  setIsOverviewLoading: (value: boolean) => set({ isOverviewLoading: value }),
 }));

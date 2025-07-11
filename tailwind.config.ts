@@ -4,8 +4,7 @@ const config: Config = {
   // Para soportar modo oscuro controlado por clase `.dark`
   darkMode: "class",
 
-  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
-
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}", "./src/**/*.{css,scss}"],
   theme: {
     borderRadius: {
       DEFAULT: "var(--radius)",
@@ -13,14 +12,20 @@ const config: Config = {
       md: "calc(var(--radius) - 2px)",
       lg: "var(--radius)",
       xl: "calc(var(--radius) + 4px)",
-      full: "9999px", // opcional, por si usas rounded-full
+      full: "9999px",
+    },
+    colors: {
+      foreground: "var(--foreground)",
+      // background: "var(--background)",
+      surface: "var(--surface)",
+      // primary: "var(--primary)",
     },
     extend: {
-      // Aquí va el resto de tu extend (colors, spacing, etc.)
+      fontSize: {},
     },
   },
 
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };
 
 export default config;

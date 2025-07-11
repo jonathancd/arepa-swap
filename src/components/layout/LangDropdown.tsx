@@ -17,7 +17,7 @@ export function LangDropdown() {
           variant="ghost"
           size="icon"
           aria-label="Language"
-          className="bg-background cursor-pointer hover:opacity-[0.6]"
+          className="bg-background hover:opacity-[0.6]"
         >
           <Globe className="w-5 h-5" />
         </Button>

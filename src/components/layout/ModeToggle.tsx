@@ -11,7 +11,7 @@ export function ModeToggle() {
     <Button
       variant="ghost"
       size="icon"
-      className="bg-background cursor-pointer hover:opacity-[0.6]"
+      className="bg-background hover:opacity-[0.6]"
       aria-label="Toggle theme"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >

@@ -3,6 +3,10 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* color-input
+  color-card-header
+  color-background-halt (navbar) */
+
   --primary: #ffd700;
   --primary-hover: #e6c200;
   --border: #636060;
@@ -18,17 +22,21 @@
 
   --radius: 16px;
 
-  /* 
-    background: rgba(34, 34, 34, 0.05) 
-    color: #000;
-  */
+  --color-title: #f4eeff;
+  --color-subtitle: #b8add2;
 
-  /* Dark */
-  /* 
-    background: rgba(255, 255, 255, 0.12)
-    color: #fff;
-   */
+  --accent: rgba(255, 255, 255, 0.12);
 
+  /* 
+  //  background: rgba(34, 34, 34, 0.05)
+  //  color: #000;
+
+  // Dark
+  //  background: rgba(255, 255, 255, 0.12)
+  //  color: #fff; */
+
+  --drawer-title: var(--color-title);
+  --drawer-subtitle: var(--color-subtitle);
   --drawer-header-bg: var(--surface);
   --drawer-header-text: var(--primary);
   --drawer-border-color: var(--border);
@@ -38,34 +46,33 @@
   --border: #373535;
 
   --background: #1a1919;
-  --foreground: #e0e0e0;
+  /* --foreground: #e0e0e0; */
+  --foreground: #cdc28a;
   --surface: #232325;
-
-  /* --muted: #a0a0a0;
-  --highlight: #38bdf8;
-  --error: #ff4c4c;
-  --success: #34d399; */
 
   --drawer-header-bg: var(--primary);
   --drawer-header-text: #000;
   --drawer-border-color: var(--border);
+  --drawer-title: var(--color-title);
+  --drawer-subtitle: var(--color-subtitle);
 }
 
 @layer utilities {
   .bg-primary {
     background-color: var(--primary);
   }
-
-  .text-primary {
-    color: var(--primary);
-  }
-
   .bg-background {
     background-color: var(--background);
   }
-
   .bg-surface {
     background-color: var(--surface);
+  }
+  .bg-foreground {
+    background-color: var(--foreground);
+  }
+
+  .text-primary {
+    color: var(--primary);
   }
 
   .border-primary {
@@ -85,4 +92,49 @@
   .rounded {
     border-radius: var(--radius) !important;
   }
+  boddy {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
+  }
+}
+
+button {
+  @apply cursor-pointer;
+}
+
+html::-webkit-scrollbar-button,
+body::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Opcional: definir estilo del scrollbar para que no se vea feo */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 6px;
+}
+
+.custom-no-drawer-handle > div:first-child {
+  display: none;
+}
+
+.no-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+.no-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.no-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  /* background-color: var(--color-subtitle); */
+  border-radius: 4px;
 }

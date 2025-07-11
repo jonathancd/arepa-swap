@@ -19,7 +19,7 @@ export function WalletAddressButton({ ...props }) {
       onClick={openOverviewModal}
       variant="outline"
       size="sm"
-      className="h-[32px] pl-[36px] pr-[12px] relative border-0 rounded cursor-pointer text-base font-semibold hover:opacity-[0.6] font-mono "
+      className="h-[32px] pl-[36px] pr-[12px] relative border-0 rounded text-base font-semibold hover:opacity-[0.6]"
       {...props}
     >
       {connectedWallet?.icon && (
@@ -34,7 +34,7 @@ export function WalletAddressButton({ ...props }) {
       <div className="hidden sm:inline-flex truncate">
         {account.slice(0, 2)}...{account.slice(-4)}
       </div>
-      <div className="ml-auto">
+      <div className="ml-auto text-white">
         <ChevronDown />
       </div>
     </Button>

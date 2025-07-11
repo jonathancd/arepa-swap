@@ -1,0 +1,49 @@
+🧩 Modal / Overlay Patterns
+Tipo de interacción	Componente principal	Cuándo usarlo
+🔳 Modal estándar centrado	Dialog (shadcn/ui)	Para acciones de escritorio como conectar wallets, editar configuraciones, mostrar formularios
+📱 Modal en mobile que desliza desde abajo	Drawer (shadcn/ui)	En pantallas pequeñas, para una experiencia natural y fluida como una app
+👀 Popover contextual pequeño	Popover (shadcn/ui)	Para mostrar información contextual (e.g. balance, notificaciones, user menu)
+📌 Side panel persistente (ej. filtros)	Sheet (shadcn/ui)	Para filtros, navegación lateral o configuraciones de módulo (desktop y mobile)
+
+
+🎞️ Animaciones
+✔️ Reglas de animación
+Situación	Herramienta	Motivo
+Transiciones complejas de entrada	Framer Motion	Gran control: entrada desde abajo, fadeIn, staggered, delays, etc.
+Hover, focus, active, simple state	TailwindCSS	Ya optimizado por clase (transition, duration-200, hover:bg)
+Animaciones automáticas (ej. modal)	shadcn/ui + Radix UI	Ya vienen con transiciones base. No sobrescribir si no hace falta
+
+🧠 Regla
+✅ Usa Framer Motion solo cuando necesitas control avanzado de animación o animaciones personalizadas.
+❌ No abuses para cosas simples como hovers o tabs.
+
+
+🧱 Layouts con scroll o adaptabilidad
+✔️ Reglas de contenedores
+Siempre que uses flex-1, asegúrate que el padre tenga display: flex y altura conocida
+Para scroll interno:
+Usa overflow-y-auto
+Asegúrate que todos los padres tengan min-h-0
+Usa h-screen, h-[80vh], max-h-[500px] para controlar altura de modales/dialogs
+Evita usar h-full a ciegas si no sabes si el padre tiene altura definida
+
+
+🎯 Buenas prácticas con shadcn/ui
+Componente	Directiva
+Dialog	Para formularios, conexión de wallet, confirmaciones. Centrado.
+Drawer	Modal móvil tipo “bottom sheet”. Con h-[90%] y rounded-t-xl.
+Popover	Para menús rápidos. Evita usarlo como modal.
+Tooltip	Para micro-interacciones. No usar para contenido extenso.
+Sheet	Para side panels más grandes, configuraciones globales o navegación.
+
+
+📘 Regla de oro: "Comportamiento igual, visual diferente"
+Cuando tengas un componente que hace lo mismo pero se ve diferente en mobile vs desktop,
+→ centraliza la lógica
+→ separa el layout
+
+return isMobile ? (
+  <WalletConnectDrawer ... />
+) : (
+  <WalletConnectDialog ... />
+);

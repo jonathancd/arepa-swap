@@ -2,14 +2,18 @@ export async function fetchWalletOverview(
   address: string,
   protocol: string,
   setOverviewTokenBalances: (tokens: any[]) => void,
-  setOverviewTotalUSD: (amount: number) => void
+  setOverviewTotalUSD: (amount: number) => void,
+  setIsOverviewLoading: (value: boolean) => void
 ) {
   try {
-    console.log("Haciendo llamada a la api...");
+    setIsOverviewLoading(true);
     const response = await fetch(
       `/api/wallet/overview?address=${address}&protocol=${protocol}`
     );
     const data = await response.json();
+
+    setIsOverviewLoading(false);
+
     if (data.error) {
       console.error("Error fetching balances: ", data.error);
       return;
@@ -17,9 +21,10 @@ export async function fetchWalletOverview(
 
     const { tokens, totalUSD } = data;
 
-    console.log("aja tokens en fetch overview balance");
-    console.log({ tokens, totalUSD });
     setOverviewTokenBalances(tokens);
     setOverviewTotalUSD(totalUSD);
-  } catch (error) {}
+  } catch (error) {
+    console.log("ok que pasa????");
+    console.log(error);
+  }
 }

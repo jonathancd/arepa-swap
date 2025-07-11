@@ -5,7 +5,7 @@ import { ModeToggle } from "./ModeToggle";
 import { LangDropdown } from "./LangDropdown";
 import { MobileMenu } from "./MobileMenu";
 import { NetworkSelector } from "@/features/network/components/NetworkSelector";
-import { WalletConnectManager } from "@/features/wallet/components/WalletConnectManager";
+import { WalletButtonManager } from "@/features/wallet/components/managers/WalletButtonManager";
 
 export default function Navbar() {
   return (
@@ -14,7 +14,7 @@ export default function Navbar() {
         {/* Logo / Title */}
         <Link
           href="/"
-          className="text-lg font-bold text-primary hover:text-primary-hover"
+          className="text-2xl font-logo font-bold text-primary hover:text-primary-hover"
         >
           ArepaSwap
         </Link>
@@ -24,14 +24,14 @@ export default function Navbar() {
           <ModeToggle />
           <LangDropdown />
           <NetworkSelector />
-          <WalletConnectManager />
+          <WalletButtonManager />
         </div>
 
         {/* Mobile Actions */}
         <div className="flex items-center space-x-2 md:hidden">
           <MobileMenu />
           <NetworkSelector />
-          <WalletConnectManager />
+          <WalletButtonManager />
         </div>
       </nav>
     </header>

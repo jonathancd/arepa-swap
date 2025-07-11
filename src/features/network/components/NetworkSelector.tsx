@@ -16,7 +16,7 @@ export function NetworkSelector() {
     <Button
       onClick={openNetworkModal}
       variant="outline"
-      className="h-[32px] pl-[36px] pr-[12px] relative border-0 rounded cursor-pointer text-base font-semibold hover:opacity-[0.6]"
+      className="h-[32px] pl-[36px] pr-[12px] relative border-0 rounded text-base font-semibold hover:opacity-[0.6]"
     >
       <div className="absolute left-0 w-[32px]">
         <Image
@@ -30,7 +30,7 @@ export function NetworkSelector() {
       <div className="hidden sm:inline-flex truncate">
         {selectedNetwork.name}
       </div>
-      <div className="ml-auto">
+      <div className="ml-auto text-white">
         <ChevronDown />
       </div>
     </Button>
