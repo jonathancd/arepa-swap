@@ -18,7 +18,6 @@ export class MetaMaskAdapter extends BaseWalletProvider {
   protocol = Protocol.EVM;
 
   private _onAccountChanged?: (acc: string) => void;
-  private _balanceInterval: any = null;
   private _onChainChanged?: () => void;
 
   isAvailable(): boolean {

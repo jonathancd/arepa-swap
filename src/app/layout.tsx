@@ -7,7 +7,7 @@
 // };
 
 import "./globals.css";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Noto_Sans, Sour_Gummy } from "next/font/google";
 import { Toaster } from "sonner";
 
@@ -23,6 +23,8 @@ import { WalletConnectDialog } from "@/features/wallet/components/modals/WalletC
 import { NetworkSelectorManager } from "@/features/network/components/manager/NetworkSelectorManager";
 import { useWalletBalanceSync } from "@/features/wallet/hooks/useWalletBalanceSync";
 
+import { PushNotificationInitializer } from "@/features/push-notifications/PushNotificationInitializer";
+
 const sourGummy = Sour_Gummy({
   subsets: ["latin"],
   weight: ["400"],
@@ -32,8 +34,8 @@ const sourGummy = Sour_Gummy({
 
 const noto_sans = Noto_Sans({
   subsets: ["latin"],
-  weight: ["400", "700"], // ajusta los pesos que necesites
-  variable: "--font-noto", // opcional si quieres usarlo como CSS variable
+  weight: ["400", "700"],
+  variable: "--font-noto",
   display: "swap",
 });
 
@@ -58,6 +60,9 @@ export default function RootLayout({
         {/* text-foreground  */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
+
+          <PushNotificationInitializer />
+          <button className="border">Enviar notificación de prueba</button>
           <NetworkSelectorManager />
           <WalletConnectDialog />
           <WalletOverviewDrawer />

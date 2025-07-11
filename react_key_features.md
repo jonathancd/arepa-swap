@@ -8,7 +8,7 @@ Without a cleanup, those effects would continue running even if the component is
 
 Si el efecto crea algo que "vive" en segundo plano (tiempos, listeners, conexiones, observadores…), debes limpiarlo.
 
-# Tipo: ¿Necesita return cleanup?
+## Tipo: ¿Necesita return cleanup?
 
 setTimeout, setInterval = Sí, con clearTimeout, clearInterval
 addEventListener = Sí, con removeEventListener
