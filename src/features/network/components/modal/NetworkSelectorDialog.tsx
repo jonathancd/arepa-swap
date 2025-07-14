@@ -8,16 +8,16 @@ export function NetworkSelectorDialog({ open, onOpenChange, ...props }: Props) {
       <DialogContent
         showCloseButton={false}
         className="
-          !max-w-sm 
-          w-full border-0 
+          !max-w-sm
+          w-full border-0
           sm:h-[196px]
           flex flex-col
           min-h-0
-          p-0 
+          p-0
           gap-0
           rounded
           overflow-hidden
-      "
+        "
       >
         <NetworkSelectorLayout {...props} />
       </DialogContent>

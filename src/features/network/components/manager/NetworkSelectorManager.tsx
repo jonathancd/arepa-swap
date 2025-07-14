@@ -1,20 +1,18 @@
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { NetworkSelectorDrawer } from "../drawer/NetworkSelectorDrawer";
 import { NetworkSelectorDialog } from "../modal/NetworkSelectorDialog";
-import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useAvailableNetworks } from "../../hooks/useAvailableNetworks";
 import { useNetworkStore } from "../../stores/networkStore";
 import { INetwork } from "@/features/protocols/types/INetwork";
 import { INetworkSelectorProps } from "../../types/INetworkSelector";
+import { walletRegistry } from "@/features/wallet/registry/walletRegistry";
 
 export function NetworkSelectorManager() {
+  const wallets = walletRegistry.getAll();
   const networks: INetwork[] = useAvailableNetworks();
-  const { account, wallets } = useWalletStore();
   const { isNetworkModalOpen, closeNetworkModal, setSelectedNetwork } =
     useNetworkStore();
   const isMobile = useMediaQuery("(max-width: 768px)");
-
-  if (!account) return null;
 
   const handleSelect = async (networkId: number) => {
     const network: INetwork | undefined = networks.find(

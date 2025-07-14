@@ -24,6 +24,7 @@ import { NetworkSelectorManager } from "@/features/network/components/manager/Ne
 import { useWalletBalanceSync } from "@/features/wallet/hooks/useWalletBalanceSync";
 
 import { PushNotificationInitializer } from "@/features/push-notifications/PushNotificationInitializer";
+import { WalletInitializer } from "@/features/wallet/components/WalletInitializer";
 
 const sourGummy = Sour_Gummy({
   subsets: ["latin"],
@@ -45,10 +46,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   initWallets();
-  useRestoreWallet();
-  useWalletOverview();
-  useWalletBalanceSync();
-  useSyncNetworkWithWallet();
+  // useRestoreWallet();
+  // useWalletOverview();
+  // useWalletBalanceSync();
+  // useSyncNetworkWithWallet();
 
   return (
     <html
@@ -60,9 +61,8 @@ export default function RootLayout({
         {/* text-foreground  */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
-
+          <WalletInitializer />
           <PushNotificationInitializer />
-          <button className="border">Enviar notificación de prueba</button>
           <NetworkSelectorManager />
           <WalletConnectDialog />
           <WalletOverviewDrawer />

@@ -1,5 +1,5 @@
-import { BrowserProvider, formatEther } from "ethers";
-import { BaseWalletProvider } from "../providers/BaseWalletProvider";
+import { BrowserProvider, formatEther, Signer } from "ethers";
+import { BaseWalletAdapter } from "./BaseWalletAdapter";
 import { Protocol } from "@/features/protocols/constants/Protocol";
 import { findEvmNetworkByHex } from "@/features/protocols/evm/utils/evmNetworkUtils";
 import { IEvmNetwork } from "@/features/protocols/evm/types/IEvmNetwork";
@@ -10,15 +10,15 @@ declare global {
   }
 }
 
-export class MetaMaskAdapter extends BaseWalletProvider {
+export class MetaMaskAdapter extends BaseWalletAdapter {
   id = "metamask";
   name = "MetaMask";
   icon = "/icons/wallets/metamask.svg";
   group = "top" as const;
   protocol = Protocol.EVM;
 
-  private _onAccountChanged?: (acc: string) => void;
-  private _onChainChanged?: () => void;
+  private _accountListener?: (accounts: string[]) => void;
+  private _chainListener?: () => void;
 
   isAvailable(): boolean {
     return (
@@ -50,6 +50,11 @@ export class MetaMaskAdapter extends BaseWalletProvider {
     return findEvmNetworkByHex(chainId || "") || null;
   }
 
+  async getSigner(): Promise<Signer> {
+    const provider = new BrowserProvider(window.ethereum);
+    return provider.getSigner();
+  }
+
   async switchNetwork(chainIdHex: string): Promise<void> {
     try {
       await window.ethereum?.request({
@@ -62,27 +67,24 @@ export class MetaMaskAdapter extends BaseWalletProvider {
   }
 
   onAccountChanged(handler: (acc: string) => void): void {
-    this._onAccountChanged = handler;
-    window.ethereum?.on("accountsChanged", (accounts: string[]) => {
-      handler(accounts[0]);
-    });
+    this._accountListener = (accounts: string[]) => handler(accounts[0]);
+    window.ethereum?.on("accountsChanged", this._accountListener);
   }
 
   onChainChanged(handler: () => void): void {
-    this._onChainChanged = handler;
-    window.ethereum?.on("chainChanged", handler);
+    this._chainListener = handler;
+    window.ethereum?.on("chainChanged", this._chainListener);
   }
 
   offListeners(): void {
-    if (this._onAccountChanged) {
-      window.ethereum?.removeListener(
-        "accountsChanged",
-        this._onAccountChanged
-      );
+    if (this._accountListener) {
+      window.ethereum?.removeListener("accountsChanged", this._accountListener);
+      this._accountListener = undefined;
     }
 
-    if (this._onChainChanged) {
-      window.ethereum?.removeListener("chainChanged", this._onChainChanged);
+    if (this._chainListener) {
+      window.ethereum?.removeListener("chainChanged", this._chainListener);
+      this._chainListener = undefined;
     }
   }
 }

@@ -24,8 +24,12 @@ export function useWalletBalanceSync() {
     } else {
       // Fallback: polling cada 15s
       const fetchBalance = async () => {
-        const balance = await connectedWallet.getBalance(account);
-        setBalance(balance);
+        const newBalance = await connectedWallet.getBalance(account);
+        const currentBalance = useWalletStore.getState().balance;
+
+        if (newBalance !== currentBalance) {
+          setBalance(newBalance);
+        }
       };
 
       fetchBalance();
@@ -36,4 +40,17 @@ export function useWalletBalanceSync() {
       };
     }
   }, [connectedWallet, account, setBalance]);
+  /**
+   * Syncs wallet balance either via wallet events or polling.
+   *
+   * If the connected wallet supports `onBalanceChanged`, use it to subscribe to real-time balance updates.
+   * Otherwise, falls back to polling every 15s.
+   *
+   * NOTE: This hook will trigger Zustand store updates using `setBalance`.
+   *    Any React component that **subscribes to `balance` in the store** will re-render every time this value changes,
+   *    even if the value is the same.
+   *
+   * Optimization: We compare the new balance with the current one before setting it,
+   *    to avoid unnecessary re-renders across the app.
+   */
 }

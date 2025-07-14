@@ -3,14 +3,20 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
-import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { ChevronDown } from "lucide-react";
 
 export function NetworkSelector() {
-  const { account } = useWalletStore();
   const { selectedNetwork, openNetworkModal } = useNetworkStore();
+  // const { selectedNetwork, openNetworkModal } = useNetworkStore(
+  //   (state: any) => ({
+  //     selectedNetwork: state.selectedNetwork,
+  //     openNetworkModal: state.openNetworkModal,
+  //   }),
+  //   shallow
+  // );
 
-  if (!account || !selectedNetwork) return;
+  console.log({ selectedNetwork });
+  if (!selectedNetwork) return;
 
   return (
     <Button

@@ -1,25 +1,13 @@
 import { useEffect } from "react";
 import { useWalletStore } from "../stores/walletStore";
-import { fetchWalletOverview } from "../utils/fetchWalletOverview";
+import { loadWalletOverviewIntoStore } from "../services/loadWalletOverviewIntoStore";
 
 export function useWalletOverview() {
-  const {
-    account,
-    protocol,
-    setIsOverviewLoading,
-    setOverviewTokenBalances,
-    setOverviewTotalUSD,
-  } = useWalletStore();
+  const { account, protocol } = useWalletStore();
 
   useEffect(() => {
     if (account && protocol) {
-      fetchWalletOverview(
-        account,
-        protocol,
-        setOverviewTokenBalances,
-        setOverviewTotalUSD,
-        setIsOverviewLoading
-      );
+      loadWalletOverviewIntoStore(account, protocol);
     }
   }, [account, protocol]);
 }

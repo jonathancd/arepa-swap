@@ -1,42 +1,32 @@
 import { create } from "zustand";
-import { BaseWalletProvider } from "../lib/providers/BaseWalletProvider";
+import { BaseWalletAdapter } from "../adapters/BaseWalletAdapter";
 import { Protocol } from "@/features/protocols/constants/Protocol";
-
-interface TokenBalance {
-  contract_address: string;
-  contract_name: string;
-  contract_ticker_symbol: string;
-  logo_url: string;
-  balance: number;
-  quote?: number;
-  network?: string; // solo para multichain overview
-}
+import { walletRegistry } from "../registry/walletRegistry";
+import { ITokenBalance } from "../types/ITokenBalance";
 
 interface WalletStore {
-  wallets: BaseWalletProvider[];
-  connectedWallet: BaseWalletProvider | null;
+  connectedWallet: BaseWalletAdapter | null;
   protocol: Protocol | null; // Nuevo: para saber si es EVM o Solana
 
   account: string | null;
   balance: string | null;
 
-  overviewTokenBalances: TokenBalance[];
+  overviewTokenBalances: ITokenBalance[];
   overviewTotalUSD: number;
 
   isConnectModalOpen: boolean;
   isOverviewModalOpen: boolean;
   isOverviewLoading: boolean;
 
-  registerWallet: (wallet: BaseWalletProvider) => void;
   connectWallet: (walletId: string) => Promise<void>;
   disconnectWallet: () => void;
 
   setAccount: (account: string | null) => void;
   setBalance: (balance: string | null) => void;
-  setConnectedWallet: (wallet: BaseWalletProvider | null) => void;
+  setConnectedWallet: (wallet: BaseWalletAdapter | null) => void;
   setProtocol: (protocol: Protocol | null) => void;
 
-  setOverviewTokenBalances: (tokens: TokenBalance[]) => void;
+  setOverviewTokenBalances: (tokens: ITokenBalance[]) => void;
   setOverviewTotalUSD: (total: number) => void;
 
   closeOverviewModal: () => void;
@@ -49,7 +39,6 @@ interface WalletStore {
 export const useWalletStore = create<WalletStore>((set, get) => ({
   connectedWallet: null,
   protocol: null,
-  wallets: [],
 
   account: "",
   balance: "",
@@ -62,7 +51,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   isOverviewLoading: false,
 
   connectWallet: async (walletId) => {
-    const wallet = get().wallets.find((w) => w.id === walletId);
+    const wallet = walletRegistry.get(walletId);
     if (!wallet || !wallet.isAvailable()) return;
 
     await wallet.connect();
@@ -101,13 +90,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
     localStorage.removeItem("wallet-provider");
   },
-  registerWallet: (wallet) =>
-    set((state) => {
-      if (!state.wallets.find((w) => w.id === wallet.id)) {
-        return { wallets: [...state.wallets, wallet] };
-      }
-      return state;
-    }),
   setAccount: (account) => set({ account }),
   setBalance: (balance) => set({ balance }),
   setConnectedWallet: (connectedWallet) => set({ connectedWallet }),

@@ -1,13 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
+import { walletRegistry } from "../registry/walletRegistry";
 
 export function useRestoreWallet() {
+  const initialized = useRef(false);
+  const wallets = useMemo(() => walletRegistry.getAll(), []); // Si no memo las wallets. se renderiza cada vez. porque registry cambia de referencia.
   const { setSelectedNetwork } = useNetworkStore();
-  const { wallets, setAccount, setConnectedWallet, setProtocol } =
-    useWalletStore();
+  const { setAccount, setConnectedWallet, setProtocol } = useWalletStore();
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     const lastProvider = localStorage.getItem("wallet-provider");
     if (!lastProvider) return;
 
@@ -29,18 +34,29 @@ export function useRestoreWallet() {
 
     fetchAccountInfo();
 
-    connected.onAccountChanged?.(() => {
-      fetchAccountInfo();
-    });
+    const accountHandler = () => fetchAccountInfo();
+    const chainHandler = () => fetchAccountInfo();
 
-    connected.onChainChanged?.(() => {
-      fetchAccountInfo();
-    });
+    connected.onAccountChanged?.(accountHandler);
+    connected.onChainChanged?.(chainHandler);
 
     return () => {
       connected.offListeners?.();
+
+      // si el adapter no implementa offListeners:
+      if (window.ethereum?.removeListener) {
+        window.ethereum.removeListener("accountsChanged", accountHandler);
+        window.ethereum.removeListener("chainChanged", chainHandler);
+      }
     };
-  }, [wallets]);
+    // }, [wallets]);
+  }, [
+    wallets,
+    setAccount,
+    setConnectedWallet,
+    setProtocol,
+    setSelectedNetwork,
+  ]);
 
   // los metodos del store no cambian de referencia asi que no es necesario colocarlos como dependencias.
   // en desarrollo el useEffect se dispara dos veces.

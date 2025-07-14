@@ -1,4 +1,4 @@
-import { BaseWalletProvider } from "../providers/BaseWalletProvider";
+import { BaseWalletAdapter } from "./BaseWalletAdapter";
 import EthereumProvider from "@walletconnect/ethereum-provider";
 import { EvmNetworkRegistry } from "@/features/protocols/evm/constants/evmNetworkRegistry";
 import { Protocol } from "@/features/protocols/constants/Protocol";
@@ -6,7 +6,7 @@ import { IBaseNetwork } from "@/features/protocols/types/IBaseNetwork";
 
 let provider: EthereumProvider | null = null;
 
-export class WalletConnectAdapter extends BaseWalletProvider {
+export class WalletConnectAdapter extends BaseWalletAdapter {
   id = "walletconnect";
   name = "WalletConnect";
   icon = "/icons/wallets/walletconnect.svg";

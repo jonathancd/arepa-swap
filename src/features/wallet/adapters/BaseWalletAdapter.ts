@@ -1,7 +1,8 @@
 import { Protocol } from "@/features/protocols/constants/Protocol";
 import { INetwork } from "@/features/protocols/types/INetwork";
+import { Signer } from "ethers";
 
-export abstract class BaseWalletProvider {
+export abstract class BaseWalletAdapter {
   abstract id: string;
   abstract name: string;
   abstract icon: string;
@@ -13,6 +14,7 @@ export abstract class BaseWalletProvider {
   abstract getAccount(): Promise<string | null>;
   abstract getBalance(account: string): Promise<string | null>;
   abstract getNetwork(): Promise<INetwork | null>;
+  abstract getSigner(): Promise<Signer>;
   abstract switchNetwork(chainId: string): Promise<void>;
 
   onBalanceChanged?(account: string, handler: (balance: string) => void): void;
