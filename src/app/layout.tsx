@@ -46,10 +46,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   initWallets();
-  // useRestoreWallet();
-  // useWalletOverview();
-  // useWalletBalanceSync();
-  // useSyncNetworkWithWallet();
+  // Safe to call here: this function doesn't use React hooks.
+  // It's only responsible for registering available wallet adapters
+  // into a global registry or Zustand store. Since it's a pure JS call,
+  // we can execute it at the top level of the layout without violating
+  // React's Rules of Hook
+
+  // Important: React hooks like `useEffect`, `useStore`, etc.
+  // MUST NOT be used directly in this `layout.tsx` file.
+  // Layout files in Next.js are executed outside of the React rendering context,
+  // so using hooks here would break the Rules of Hooks and cause runtime errors.
+  // Instead, any hook logic must go into a client component (e.g. `WalletStateInitializer`).
 
   return (
     <html

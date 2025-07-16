@@ -50,9 +50,16 @@ export class MetaMaskAdapter extends BaseWalletAdapter {
     return findEvmNetworkByHex(chainId || "") || null;
   }
 
-  async getSigner(): Promise<Signer> {
+  async getSigner(): Promise<Signer | null> {
     const provider = new BrowserProvider(window.ethereum);
-    return provider.getSigner();
+    // const accounts = await provider.send("eth_accounts", []);
+    const account = this.getAccount();
+
+    if (!account) return null;
+
+    // getSigner() en ethers.js hace internamente una llamada a: window.ethereum.request({ method: "eth_requestAccounts" });
+    // Y ES ESE método el que abre el modal de conexión si el usuario no ha autorizado aún.
+    return await provider.getSigner();
   }
 
   async switchNetwork(chainIdHex: string): Promise<void> {

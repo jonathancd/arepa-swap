@@ -14,7 +14,7 @@ export abstract class BaseWalletAdapter {
   abstract getAccount(): Promise<string | null>;
   abstract getBalance(account: string): Promise<string | null>;
   abstract getNetwork(): Promise<INetwork | null>;
-  abstract getSigner(): Promise<Signer>;
+  abstract getSigner(): Promise<Signer | null>;
   abstract switchNetwork(chainId: string): Promise<void>;
 
   onBalanceChanged?(account: string, handler: (balance: string) => void): void;

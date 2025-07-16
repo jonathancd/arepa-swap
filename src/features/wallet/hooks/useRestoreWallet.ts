@@ -23,12 +23,14 @@ export function useRestoreWallet() {
 
     const fetchAccountInfo = async () => {
       const acc = await connected.getAccount();
+
+      if (acc) {
+        setAccount(acc);
+        setProtocol(connected.protocol);
+        setConnectedWallet(connected);
+      }
+
       const net = await connected.getNetwork?.();
-
-      setAccount(acc);
-      setProtocol(connected.protocol);
-      setConnectedWallet(connected);
-
       if (net) setSelectedNetwork(net);
     };
 
@@ -49,7 +51,6 @@ export function useRestoreWallet() {
         window.ethereum.removeListener("chainChanged", chainHandler);
       }
     };
-    // }, [wallets]);
   }, [
     wallets,
     setAccount,

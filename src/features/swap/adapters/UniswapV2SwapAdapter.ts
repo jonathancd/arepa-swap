@@ -1,6 +1,6 @@
 import { BaseSwapAdapter } from "./BaseSwapAdapter";
 import { SwapParams, SwapEstimate, ApproveParams } from "../types/ISwapAdapter";
-import { Contract, parseUnits } from "ethers";
+import { Contract, formatUnits, parseUnits } from "ethers";
 import UniswapV2RouterABI from "../abi/UniswapV2Router.json";
 
 // ABI (Application Binary Interface) for UniswapV2Router02
@@ -43,10 +43,13 @@ export class UniswapV2SwapAdapter extends BaseSwapAdapter {
     const amountInParsed = parseUnits(amountIn, 18); // ajustar a decimals reales si es necesario
 
     const amountsOut = await this.router.getAmountsOut(amountInParsed, route);
-    const amountOut = amountsOut[amountsOut.length - 1].toString();
+    // const amountOut = amountsOut[amountsOut.length - 1].toString();
+    const amountOut = amountsOut[amountsOut.length - 1];
+    const amountOutFormatted = formatUnits(amountOut, 18);
 
     return {
       amountOut,
+      amountOutFormatted,
       route,
     };
   }

@@ -9,6 +9,7 @@ export interface SwapParams {
 
 export interface SwapEstimate {
   amountOut: string;
+  amountOutFormatted: string;
   route?: string[];
   priceImpact?: string;
 }

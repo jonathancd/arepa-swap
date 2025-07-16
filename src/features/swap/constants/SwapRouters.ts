@@ -15,6 +15,7 @@ export const SwapRouters: Record<Protocol, Record<number, string>> = {
     1: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", // Ethereum Mainnet - Uniswap V2
     56: "0x10ED43C718714eb63d5aA57B78B54704E256024E", // BSC Mainnet - PancakeSwap V2
     137: "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff", // Polygon - QuickSwap
+    42161: "0x1b02da8cb0d097eb8d57a175b88c7d8b47997506", // Arbitrum - SushiSwap V2
   },
   // [Protocol.SOLANA]: {
   // In the future: 0: "Jupiter placeholder or config URI"

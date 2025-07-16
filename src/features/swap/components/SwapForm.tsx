@@ -1,67 +1,104 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useSwapStore } from "@/features/swap/stores/swapStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNetworkStore } from "@/features/network/stores/networkStore";
-import { ChevronDown, Image } from "lucide-react";
+import { useSwapDefaults } from "../hooks/useSwapDefaults";
+import { useTokenPrice } from "@/features/token/hooks/useTokenPrice";
+import { ChevronDown, ArrowDownUp } from "lucide-react";
+import { TokenSelectorModal } from "@/features/token/components/TokenSelectorModal";
+import { useTokenBalanceFromStore } from "@/features/token/hooks/useTokenBalanceFromStore";
+import { useSetupActiveSwapAdapter } from "../hooks/useSetupActiveSwapAdapter";
 
 export function SwapForm() {
-  const { account, setIsConnectModalOpen } = useWalletStore();
-  const { activeSwapAdapter } = useSwapStore();
+  useSwapDefaults();
+  // useSetupActiveSwapAdapter();
 
-  const [tokenIn, setTokenIn] = useState("WETH"); // TODO: use from registry
-  const [tokenOut, setTokenOut] = useState("USDT");
+  const { account, connectedWallet, setIsConnectModalOpen } = useWalletStore();
+  const { tokenIn, tokenOut, setTokenIn, setTokenOut, activeSwapAdapter } =
+    useSwapStore();
+
   const [amountIn, setAmountIn] = useState("");
   const [estimatedOut, setEstimatedOut] = useState<string | null>(null);
   const [estimating, setEstimating] = useState(false);
+  const [editingField, setEditingField] = useState<"in" | "out" | null>(null);
   const [error, setError] = useState<string | null>(null);
-
   const [debouncedAmountIn] = useDebounce(amountIn, 400);
+
+  const priceIn = useTokenPrice(tokenIn);
+  const priceOut = useTokenPrice(tokenOut);
+
+  const tokenInBalance = Number(useTokenBalanceFromStore(tokenIn));
+
+  const insufficientBalance = useMemo(() => {
+    if (!tokenIn || !amountIn || !tokenInBalance) return false;
+    return parseFloat(amountIn) > tokenInBalance;
+  }, [amountIn, tokenIn, tokenInBalance]);
+
+  const tokenInUsd =
+    priceIn && amountIn ? (parseFloat(amountIn) * priceIn).toFixed(2) : null;
+
+  const tokenOutUsd =
+    priceOut && estimatedOut
+      ? (parseFloat(estimatedOut) * priceOut).toFixed(2)
+      : null;
+
+  useEffect(() => {
+    console.log("Adapter changed:", activeSwapAdapter);
+  }, [activeSwapAdapter]);
 
   useEffect(() => {
     const estimate = async () => {
+      console.log("entra an estimate..");
       if (
         !activeSwapAdapter ||
-        !account ||
-        !tokenIn ||
-        !tokenOut ||
+        !tokenIn?.address ||
+        !tokenOut?.address ||
         !debouncedAmountIn
-      )
+      ) {
+        console.log("pero se sale...");
         return;
+      }
+
       try {
+        console.log("epaaaaa que pasa pues...");
+        console.log({ connectedWallet });
         setEstimating(true);
         setError(null);
         const result = await activeSwapAdapter.estimateSwap({
-          account,
-          tokenIn,
-          tokenOut,
+          account: account ?? "",
+          tokenIn: tokenIn.address,
+          tokenOut: tokenOut.address,
           amountIn: debouncedAmountIn,
           slippage: 0.005,
         });
-        setEstimatedOut(result.amountOut);
-      } catch (e: any) {
-        console.error("Estimate error", e);
+        console.log({ result });
+        setEstimatedOut(result.amountOutFormatted);
+      } catch (err) {
+        console.error("Estimate error", err);
         setError("Failed to estimate swap");
         setEstimatedOut(null);
       } finally {
         setEstimating(false);
       }
     };
+
     estimate();
-  }, [activeSwapAdapter, account, tokenIn, tokenOut, debouncedAmountIn]);
+  }, [activeSwapAdapter, tokenIn, tokenOut, debouncedAmountIn, account]);
 
   const handleSwap = async () => {
     if (!activeSwapAdapter || !account || !tokenIn || !tokenOut || !amountIn)
       return;
+
     try {
       const tx = await activeSwapAdapter.executeSwap({
         account,
-        tokenIn,
-        tokenOut,
+        tokenIn: tokenIn.address,
+        tokenOut: tokenOut.address,
         amountIn,
         slippage: 0.005,
       });
@@ -72,94 +109,153 @@ export function SwapForm() {
     }
   };
 
-  //   if (!activeSwapAdapter) {
-  //     return <p className="text-white">No swap adapter available</p>;
-  //   }
+  const handleSwitch = () => {
+    if (!tokenIn || !tokenOut) return;
+    setTokenIn(tokenOut);
+    setTokenOut(tokenIn);
+    setAmountIn("");
+    setEstimatedOut(null);
+  };
+
+  const handleTokenClick = (field: "in" | "out") => setEditingField(field);
+
+  const handleSelectToken = (token: any) => {
+    if (editingField === "in") setTokenIn(token);
+    if (editingField === "out") setTokenOut(token);
+    setEditingField(null);
+  };
+
+  console.log({ tokenIn });
+
+  const swapDisabled =
+    !account || estimating || !estimatedOut || insufficientBalance;
+
   return (
     <div className="max-w-md mx-auto p-4 space-y-4 bg-muted rounded-xl shadow">
+      {/* From */}
       <div>
-        <div className="flex flex-col border-0 gap-2">
-          <div>
-            <label className="block text-sm font-medium">From</label>
-            <span>{tokenIn}</span>
-          </div>
-          <div className="flex flex-row w-full h-[80px] bg-surface p-2 rounded">
-            <div>
-              <div className="px-2">
-                <Button
-                  variant="outline"
-                  className="h-[32px] pl-[36px] pr-[12px] relative border-0 rounded text-base font-semibold hover:opacity-[0.6]"
-                >
-                  <div className="absolute left-0 w-[32px]">
-                    {/* <Image
-                    src={selectedNetwork.icon}
-                    alt={selectedNetwork.name}
-                    width={100}
-                    height={20}
-                    className="rounded"
-                  /> */}
-                  </div>
-                  <div className="hidden sm:inline-flex truncate">USDT</div>
-                  <div className="ml-auto text-white">
-                    <ChevronDown />
-                  </div>
-                </Button>
+        <label className="block text-sm font-medium">From</label>
+        <div className="flex items-center w-full h-[80px] bg-surface p-2 rounded">
+          <div className="flex-1 px-2">
+            <Button
+              onClick={() => handleTokenClick("in")}
+              variant="outline"
+              className="h-[32px] pl-[36px] pr-[12px] relative border-0 rounded text-base font-semibold hover:opacity-[0.6]"
+            >
+              <div className="absolute left-0 w-[32px]">
+                {tokenIn?.icon && (
+                  <Image
+                    src={tokenIn.icon}
+                    alt={tokenIn.symbol}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                )}
               </div>
-              <div className="flex-1 text-xs text-right text-muted-foreground">
-                <Input
-                  type="text"
-                  placeholder="Token In"
-                  value={tokenIn}
-                  onChange={(e) => setTokenIn(e.target.value)}
-                />
+              <div className="hidden sm:inline-flex truncate">
+                {tokenIn?.displaySymbol ?? "-"}
               </div>
-            </div>
-            <span>~52.80 USD</span>
-          </div>
-        </div>
-        {/*  */}
-        <div>
-          <span>Change</span>
-        </div>
-        {/*  */}
-        <div>
-          <label className="block text-sm font-medium">To</label>
-          <div className="relative">
+              <div className="ml-auto text-white">
+                <ChevronDown />
+              </div>
+            </Button>
+
             <Input
-              type="text"
-              placeholder="Token Out"
-              value={tokenOut}
-              onChange={(e) => setTokenOut(e.target.value)}
+              type="number"
+              placeholder="Amount"
+              className="text-right text-sm mt-2"
+              value={amountIn}
+              onChange={(e) => setAmountIn(e.target.value)}
             />
           </div>
-          <div className="text-xs text-right text-muted-foreground">
-            Estimated: {estimating ? "..." : estimatedOut ?? "-"} {tokenOut}
+
+          <div className="text-sm text-muted-foreground ml-2 mt-4">
+            {tokenInUsd ? `~$${tokenInUsd} USD` : "-"}
+            <div className="text-xs mt-1">
+              {tokenIn && tokenInBalance != null
+                ? `Balance: ${tokenInBalance} ${tokenIn?.symbol}`
+                : "Balance: -"}
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Switch */}
+      <div className="text-center">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="rounded-full"
+          onClick={handleSwitch}
+        >
+          <ArrowDownUp />
+        </Button>
+      </div>
+
+      {/* To */}
+      <div>
+        <label className="block text-sm font-medium">To</label>
+        <div className="flex items-center w-full h-[80px] bg-surface p-2 rounded">
+          <div className="flex-1 px-2">
+            <Button
+              onClick={() => handleTokenClick("out")}
+              variant="outline"
+              className="h-[32px] pl-[36px] pr-[12px] relative border-0 rounded text-base font-semibold hover:opacity-[0.6]"
+            >
+              <div className="absolute left-0 w-[32px]">
+                {tokenOut?.icon && (
+                  <Image
+                    src={tokenOut.icon}
+                    alt={tokenOut.symbol}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                )}
+              </div>
+              <div className="hidden sm:inline-flex truncate">
+                {tokenOut?.displaySymbol ?? "-"}
+              </div>
+              <div className="ml-auto text-white">
+                <ChevronDown />
+              </div>
+            </Button>
+
+            <div className="text-xs text-right text-muted-foreground mt-2">
+              Estimated: {estimating ? "..." : estimatedOut ?? "-"}{" "}
+              {tokenOut?.symbol}
+              <hr />
+              USD: {tokenOutUsd ? ` (~$${tokenOutUsd} USD)` : ""}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Error */}
       {error && <p className="text-sm text-red-500">{error}</p>}
 
+      {/* Submit */}
       <Button
         onClick={account ? handleSwap : () => setIsConnectModalOpen(true)}
-        disabled={account && (estimating || !estimatedOut) ? true : false}
+        disabled={swapDisabled}
         className="w-full !p-4 !py-6 font-semibold text-black rounded hover:opacity-[0.6]"
       >
-        {account ? "Swap" : "Connect Wallet"}
-        {/* Searhing for the best price */}
+        {!account
+          ? "Connect Wallet"
+          : insufficientBalance
+          ? "Insufficient balance"
+          : estimating
+          ? "Estimating..."
+          : "Swap"}
       </Button>
+
+      {/* Token Modal */}
+      <TokenSelectorModal
+        open={editingField !== null}
+        onClose={() => setEditingField(null)}
+        onSelect={handleSelectToken}
+      />
     </div>
   );
 }
-/**
- * SwapForm handles swap estimations and executions.
- *
- * This component relies on `account` and `activeSwapAdapter` from the store.
- *    Any update to those values (e.g. from wallet or network sync hooks) will cause a re-render.
- *
- * We debounce `amountIn` to avoid excessive calls to `estimateSwap`.
- * Estimations and execution are fully abstracted through the active swap adapter (based on protocol).
- *
- * Make sure to avoid subscribing to unrelated store properties like `balance` here,
- *    unless they're strictly needed, to reduce unnecessary re-renders (especially from polling).
- */
