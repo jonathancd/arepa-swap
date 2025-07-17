@@ -59,7 +59,6 @@ export function useTokenSearch(
 
       try {
         const remoteTokens = await searchTokenExternally(query, chainId);
-        console.log({ remoteTokens });
         const all = [...localMatches, ...remoteTokens].filter(
           (token, i, self) =>
             self.findIndex(

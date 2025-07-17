@@ -1,20 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useTokenSearch } from "../hooks/useTokenSearch";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
+import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
 import Image from "next/image";
 import { TokenRegistry } from "../registry/tokenRegistry";
 import { IToken } from "../types/IToken";
-import { EvmNetworkRegistry } from "@/features/protocols/evm/constants/evmNetworkRegistry";
 
 interface TokenSelectorModalProps {
   open: boolean;
+  editingField: "in" | "out" | null;
+  currentFromToken: IToken | null;
+  currentToToken: IToken | null;
   onClose: () => void;
   onSelect: (token: IToken) => void;
+  onSwapTokens: () => void;
 }
 
 function useIsClient() {
@@ -25,15 +29,20 @@ function useIsClient() {
 
 export function TokenSelectorModal({
   open,
+  editingField,
+  currentFromToken,
+  currentToToken,
   onClose,
   onSelect,
+  onSwapTokens,
 }: TokenSelectorModalProps) {
   const isClient = useIsClient();
   const { selectedNetwork } = useNetworkStore();
-  const defaultChainId = selectedNetwork?.id ?? 1;
+  const availableNetworks = useAvailableNetworks();
+  const defaultChainId = selectedNetwork?.id ?? availableNetworks[0]?.id ?? 1;
+
   const [query, setQuery] = useState("");
   const [selectedChainId, setSelectedChainId] = useState(defaultChainId);
-
   const [debouncedQuery] = useDebounce(query, 500);
 
   const { tokens: searchedTokens, loading } = useTokenSearch(
@@ -44,9 +53,28 @@ export function TokenSelectorModal({
   const tokensToShow = query.length >= 2 ? searchedTokens : localTokens;
 
   const handleSelect = (token: IToken) => {
-    onSelect(token);
+    if (
+      (editingField === "in" && currentToToken?.address === token.address) ||
+      (editingField === "out" && currentFromToken?.address === token.address)
+    ) {
+      onSwapTokens();
+    } else {
+      onSelect(token);
+    }
     onClose();
   };
+
+  useEffect(() => {
+    if (open && selectedNetwork?.id) {
+      setSelectedChainId(selectedNetwork.id);
+    }
+  }, [open, selectedNetwork]);
+
+  const orderedNetworks = useMemo(() => {
+    const others = availableNetworks.filter((n) => n.id !== selectedChainId);
+    const selected = availableNetworks.find((n) => n.id === selectedChainId);
+    return selected ? [selected, ...others] : availableNetworks;
+  }, [availableNetworks, selectedChainId]);
 
   if (!isClient) return <div />;
 
@@ -62,7 +90,7 @@ export function TokenSelectorModal({
         />
 
         <div className="flex gap-4 justify-center py-2 border-b border-border">
-          {EvmNetworkRegistry.map((network) => (
+          {orderedNetworks.map((network) => (
             <button
               key={network.id}
               onClick={() => setSelectedChainId(network.id)}

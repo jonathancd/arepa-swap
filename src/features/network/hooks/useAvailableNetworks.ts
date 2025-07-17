@@ -4,7 +4,13 @@ import { INetwork } from "@/features/protocols/types/INetwork";
 
 export function useAvailableNetworks(): INetwork[] {
   const { protocol } = useWalletStore();
-  if (!protocol) return [];
+  const fallbackProtocol = protocol ?? "EVM";
 
-  return GlobalNetworkRegistry.filter((net) => net.protocol === protocol);
+  return GlobalNetworkRegistry.filter(
+    (net) =>
+      net.protocol.toLocaleLowerCase() === fallbackProtocol.toLocaleLowerCase()
+  );
+
+  // if (!protocol) return [];
+  // return GlobalNetworkRegistry.filter((net) => net.protocol === protocol);
 }

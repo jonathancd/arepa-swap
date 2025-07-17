@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useSwapStore } from "@/features/swap/stores/swapStore";
+import { useNetworkStore } from "@/features/network/stores/networkStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSwapDefaults } from "../hooks/useSwapDefaults";
@@ -12,15 +13,14 @@ import { useTokenPrice } from "@/features/token/hooks/useTokenPrice";
 import { ChevronDown, ArrowDownUp } from "lucide-react";
 import { TokenSelectorModal } from "@/features/token/components/TokenSelectorModal";
 import { useTokenBalanceFromStore } from "@/features/token/hooks/useTokenBalanceFromStore";
-import { useSetupActiveSwapAdapter } from "../hooks/useSetupActiveSwapAdapter";
+import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
+import { IToken } from "@/features/token/types/IToken";
 
 export function SwapForm() {
-  useSwapDefaults();
-  // useSetupActiveSwapAdapter();
-
-  const { account, connectedWallet, setIsConnectModalOpen } = useWalletStore();
-  const { tokenIn, tokenOut, setTokenIn, setTokenOut, activeSwapAdapter } =
-    useSwapStore();
+  const availableNetworks = useAvailableNetworks();
+  const { account, setIsConnectModalOpen } = useWalletStore();
+  const { config, setFromToken, setToToken, swapTokens } = useSwapStore();
+  const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
 
   const [amountIn, setAmountIn] = useState("");
   const [estimatedOut, setEstimatedOut] = useState<string | null>(null);
@@ -28,6 +28,9 @@ export function SwapForm() {
   const [editingField, setEditingField] = useState<"in" | "out" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [debouncedAmountIn] = useDebounce(amountIn, 400);
+
+  const tokenIn = config.fromToken;
+  const tokenOut = config.toToken;
 
   const priceIn = useTokenPrice(tokenIn);
   const priceOut = useTokenPrice(tokenOut);
@@ -48,35 +51,30 @@ export function SwapForm() {
       : null;
 
   useEffect(() => {
-    console.log("Adapter changed:", activeSwapAdapter);
-  }, [activeSwapAdapter]);
-
-  useEffect(() => {
     const estimate = async () => {
-      console.log("entra an estimate..");
       if (
-        !activeSwapAdapter ||
+        !config.swapAdapter ||
         !tokenIn?.address ||
         !tokenOut?.address ||
         !debouncedAmountIn
       ) {
-        console.log("pero se sale...");
+        console.log(config);
+        console.log(tokenIn?.address);
+        console.log(tokenOut?.address);
+        console.log(debouncedAmountIn);
         return;
       }
 
       try {
-        console.log("epaaaaa que pasa pues...");
-        console.log({ connectedWallet });
         setEstimating(true);
         setError(null);
-        const result = await activeSwapAdapter.estimateSwap({
+        const result = await config.swapAdapter.estimateSwap({
           account: account ?? "",
           tokenIn: tokenIn.address,
           tokenOut: tokenOut.address,
           amountIn: debouncedAmountIn,
           slippage: 0.005,
         });
-        console.log({ result });
         setEstimatedOut(result.amountOutFormatted);
       } catch (err) {
         console.error("Estimate error", err);
@@ -88,14 +86,14 @@ export function SwapForm() {
     };
 
     estimate();
-  }, [activeSwapAdapter, tokenIn, tokenOut, debouncedAmountIn, account]);
+  }, [config.swapAdapter, tokenIn, tokenOut, debouncedAmountIn, account]);
 
   const handleSwap = async () => {
-    if (!activeSwapAdapter || !account || !tokenIn || !tokenOut || !amountIn)
+    if (!config.swapAdapter || !account || !tokenIn || !tokenOut || !amountIn)
       return;
 
     try {
-      const tx = await activeSwapAdapter.executeSwap({
+      const tx = await config.swapAdapter.executeSwap({
         account,
         tokenIn: tokenIn.address,
         tokenOut: tokenOut.address,
@@ -109,23 +107,36 @@ export function SwapForm() {
     }
   };
 
-  const handleSwitch = () => {
-    if (!tokenIn || !tokenOut) return;
-    setTokenIn(tokenOut);
-    setTokenOut(tokenIn);
+  // Limpia la estimación y el input al intercambiar tokens
+  const handleSwapTokens = () => {
+    swapTokens();
     setAmountIn("");
     setEstimatedOut(null);
   };
 
   const handleTokenClick = (field: "in" | "out") => setEditingField(field);
 
-  const handleSelectToken = (token: any) => {
-    if (editingField === "in") setTokenIn(token);
-    if (editingField === "out") setTokenOut(token);
+  const handleSelectToken = (token: IToken) => {
+    if (!editingField) return;
+
+    if (editingField === "in") {
+      if (token.chainId !== selectedNetwork?.id) {
+        const newNetwork = availableNetworks.find(
+          (n) => n.id === token.chainId
+        );
+        if (newNetwork) {
+          setSelectedNetwork(newNetwork);
+        }
+      }
+      setFromToken(token);
+    }
+
+    if (editingField === "out") {
+      setToToken(token);
+    }
+
     setEditingField(null);
   };
-
-  console.log({ tokenIn });
 
   const swapDisabled =
     !account || estimating || !estimatedOut || insufficientBalance;
@@ -134,7 +145,9 @@ export function SwapForm() {
     <div className="max-w-md mx-auto p-4 space-y-4 bg-muted rounded-xl shadow">
       {/* From */}
       <div>
-        <label className="block text-sm font-medium">From</label>
+        <label className="block text-sm font-medium">
+          From - {selectedNetwork?.name}/{selectedNetwork?.protocol}
+        </label>
         <div className="flex items-center w-full h-[80px] bg-surface p-2 rounded">
           <div className="flex-1 px-2">
             <Button
@@ -187,7 +200,7 @@ export function SwapForm() {
           size="icon"
           variant="ghost"
           className="rounded-full"
-          onClick={handleSwitch}
+          onClick={handleSwapTokens}
         >
           <ArrowDownUp />
         </Button>
@@ -253,8 +266,12 @@ export function SwapForm() {
       {/* Token Modal */}
       <TokenSelectorModal
         open={editingField !== null}
+        editingField={editingField}
+        currentFromToken={tokenIn}
+        currentToToken={tokenOut}
         onClose={() => setEditingField(null)}
         onSelect={handleSelectToken}
+        onSwapTokens={handleSwapTokens}
       />
     </div>
   );

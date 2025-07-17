@@ -10,6 +10,7 @@ export function useRestoreWallet() {
   const { setAccount, setConnectedWallet, setProtocol } = useWalletStore();
 
   useEffect(() => {
+    console.log("useRestoreWallet");
     if (initialized.current) return;
     initialized.current = true;
 

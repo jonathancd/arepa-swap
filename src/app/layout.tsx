@@ -7,24 +7,21 @@
 // };
 
 import "./globals.css";
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 import { Noto_Sans, Sour_Gummy } from "next/font/google";
 import { Toaster } from "sonner";
 
 import Navbar from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { initWallets } from "@/features/wallet/init";
-import { useRestoreWallet } from "@/features/wallet/hooks/useRestoreWallet";
-import { useSyncNetworkWithWallet } from "@/features/network/hooks/useSyncNetworkWithWallet";
-import { useWalletOverview } from "@/features/wallet/hooks/useWalletOverview";
 import { ThemeProvider } from "next-themes";
 import { WalletOverviewDrawer } from "@/features/wallet/components/drawers/WalletOverviewDrawer";
 import { WalletConnectDialog } from "@/features/wallet/components/modals/WalletConnectDialog";
 import { NetworkSelectorManager } from "@/features/network/components/manager/NetworkSelectorManager";
-import { useWalletBalanceSync } from "@/features/wallet/hooks/useWalletBalanceSync";
 
 import { PushNotificationInitializer } from "@/features/push-notifications/PushNotificationInitializer";
 import { WalletInitializer } from "@/features/wallet/components/WalletInitializer";
+import { SwapInitializer } from "@/features/swap/components/SwapInitializer";
 
 const sourGummy = Sour_Gummy({
   subsets: ["latin"],
@@ -69,6 +66,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
           <WalletInitializer />
+          <SwapInitializer />
           <PushNotificationInitializer />
           <NetworkSelectorManager />
           <WalletConnectDialog />

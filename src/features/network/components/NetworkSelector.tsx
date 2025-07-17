@@ -7,7 +7,6 @@ import { ChevronDown } from "lucide-react";
 
 export function NetworkSelector() {
   const { selectedNetwork, openNetworkModal } = useNetworkStore();
-
   if (!selectedNetwork) return;
 
   return (

@@ -41,7 +41,6 @@ export function PushNotificationInitializer() {
       const token = await requestNotificationPermission();
 
       if (token) {
-        console.log("✅ FCM Token:", token);
         localStorage.setItem("fcmToken", token);
       }
     };

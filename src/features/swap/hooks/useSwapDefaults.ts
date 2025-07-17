@@ -1,47 +1,46 @@
 import { useEffect } from "react";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
-import { useSwapStore } from "../stores/swapStore";
+import { useSwapStore } from "@/features/swap/stores/swapStore";
+import { useNetworkStore } from "@/features/network/stores/networkStore";
 import { getDefaultTokensForNetwork } from "@/features/token/utils/getDefaultTokens";
 import { SwapAdapterFactory } from "../adapters/swapAdapterFactory";
 
-/**
- * Initializes swap defaults when wallet and network are available:
- * - Sets tokenIn and tokenOut from registry
- * - Creates the appropriate adapter via factory and sets it in the store
- */
 export function useSwapDefaults() {
   const { connectedWallet } = useWalletStore();
-  const { tokenIn, tokenOut, setTokenIn, setTokenOut, setActiveSwapAdapter } =
+  const { selectedNetwork } = useNetworkStore();
+  const { setFromToken, setToToken, setNetworks, setSwapAdapter } =
     useSwapStore();
 
   useEffect(() => {
     const init = async () => {
-      if (!connectedWallet) return;
+      if (!selectedNetwork) return;
 
-      const network = await connectedWallet.getNetwork();
-      if (!network) return;
+      const defaults = getDefaultTokensForNetwork(selectedNetwork.id);
+      if (!defaults) return;
 
-      // 🪙 Set default tokens only if not already set
-      if (!tokenIn || !tokenOut) {
-        const defaults = getDefaultTokensForNetwork(network.id);
-        if (defaults) {
-          setTokenIn(defaults.tokenIn);
-          setTokenOut(defaults.tokenOut);
-        }
+      setFromToken(defaults.tokenIn);
+      setToToken(defaults.tokenOut);
+      setNetworks(selectedNetwork);
+
+      if (selectedNetwork) {
+        const signer = connectedWallet
+          ? await connectedWallet.getSigner()
+          : undefined;
+        const adapter = await SwapAdapterFactory({
+          network: selectedNetwork,
+          signer,
+        });
+        setSwapAdapter(adapter);
       }
-
-      // Set adapter
-      const adapter = await SwapAdapterFactory(connectedWallet);
-      setActiveSwapAdapter(adapter);
     };
 
     init();
   }, [
     connectedWallet,
-    tokenIn,
-    tokenOut,
-    setTokenIn,
-    setTokenOut,
-    setActiveSwapAdapter,
+    selectedNetwork,
+    setFromToken,
+    setToToken,
+    setNetworks,
+    setSwapAdapter,
   ]);
 }

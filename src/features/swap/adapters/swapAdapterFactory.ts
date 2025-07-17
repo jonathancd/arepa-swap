@@ -1,29 +1,24 @@
 import { Protocol } from "@/features/protocols/constants/Protocol";
-import { SwapRouters } from "../constants/SwapRouters";
-import { UniswapV2SwapAdapter } from "../adapters/UniswapV2SwapAdapter";
 import { ISwapAdapter } from "../types/ISwapAdapter";
-import { BaseWalletAdapter } from "@/features/wallet/adapters/BaseWalletAdapter";
+import { UniswapV2SwapAdapter } from "./UniswapV2SwapAdapter";
+import { IEvmNetwork } from "@/features/protocols/evm/types/IEvmNetwork";
 
-/**
- * Factory to instantiate the correct swap adapter for a given wallet connection.
- */
-export async function SwapAdapterFactory(
-  wallet: BaseWalletAdapter
-): Promise<ISwapAdapter | null> {
-  console.log("SwapAdapterFactory");
-  console.log({ wallet });
-  const protocol = wallet.protocol;
-  const network = await wallet.getNetwork();
-  const signer = await wallet.getSigner();
+// Nota: Si crecen mucho los protocolos, se puede hacer un mapa de creadores
 
-  if (!network || !signer) return null;
-
-  const router = SwapRouters[protocol]?.[network.id];
-
-  if (protocol === Protocol.EVM) {
-    return new UniswapV2SwapAdapter(router, signer);
+export async function SwapAdapterFactory(params: {
+  network: IEvmNetwork;
+  signer?: any;
+}): Promise<ISwapAdapter | null> {
+  const { network, signer } = params;
+  let providerOrSigner = signer;
+  if (!providerOrSigner) {
+    // Import dinámico para optimizar el bundle (opcional)
+    const { JsonRpcProvider } = await import("ethers");
+    providerOrSigner = new JsonRpcProvider(network.rpcUrl);
   }
-
-  // Future: handle Solana, etc.
+  if (network.protocol === Protocol.EVM) {
+    return new UniswapV2SwapAdapter(network.routerAddress, providerOrSigner);
+  }
+  // Aquí puedes agregar más protocolos en el futuro
   return null;
 }

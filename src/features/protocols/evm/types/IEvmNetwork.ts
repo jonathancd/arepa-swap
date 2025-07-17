@@ -4,4 +4,7 @@ import { IBaseNetwork } from "../../types/IBaseNetwork";
 export interface IEvmNetwork extends IBaseNetwork {
   chainIdHex: string;
   evmChain: EvmChain;
+  rpcUrl: string;
+  routerAddress: string;
+  explorerUrl?: string;
 }

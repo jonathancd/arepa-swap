@@ -9,6 +9,7 @@ export function useWalletBalanceSync() {
   const { account, connectedWallet, setBalance } = useWalletStore();
 
   useEffect(() => {
+    console.log("useWalletBalanceSync");
     if (!connectedWallet || !account) return;
 
     const supportsEvent =
