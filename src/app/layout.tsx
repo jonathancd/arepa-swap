@@ -22,6 +22,7 @@ import { NetworkSelectorManager } from "@/features/network/components/manager/Ne
 import { PushNotificationInitializer } from "@/features/push-notifications/PushNotificationInitializer";
 import { WalletInitializer } from "@/features/wallet/components/WalletInitializer";
 import { SwapInitializer } from "@/features/swap/components/SwapInitializer";
+import { AppInitializer } from "@/components/layout/AppInitializer";
 
 const sourGummy = Sour_Gummy({
   subsets: ["latin"],
@@ -64,14 +65,19 @@ export default function RootLayout({
       <body className="flex flex-col min-h-screen bg-background">
         {/* text-foreground  */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <>
+            <AppInitializer />
+            <WalletInitializer />
+            <SwapInitializer />
+            <PushNotificationInitializer />
+          </>
           <Navbar />
-          <WalletInitializer />
-          <SwapInitializer />
-          <PushNotificationInitializer />
-          <NetworkSelectorManager />
-          <WalletConnectDialog />
-          <WalletOverviewDrawer />
           <main className="flex-1 p-4">{children}</main>
+          <>
+            <NetworkSelectorManager />
+            <WalletConnectDialog />
+            <WalletOverviewDrawer />
+          </>
           <Footer />
         </ThemeProvider>
         <Toaster richColors position="bottom-right" />

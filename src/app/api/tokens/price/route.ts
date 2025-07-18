@@ -1,25 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { initMoralis } from "@/lib/initMoralis";
-import Moralis from "moralis";
-import { EvmChain } from "@moralisweb3/common-evm-utils";
+import { BalanceServiceRegistry } from "@/features/protocols/services/BalanceServiceRegistry";
+import { Protocol } from "@/features/protocols/constants/Protocol";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const address = searchParams.get("address");
   const chainId = searchParams.get("chainId");
+  const protocolParam = searchParams.get("protocol");
 
-  if (!address || !chainId) {
+  if (!address || !chainId || !protocolParam) {
     return NextResponse.json(
-      { error: "Missing address or chainId" },
+      { error: "Missing address, chainId or protocol" },
       { status: 400 }
     );
   }
 
+  const protocol = protocolParam.toLowerCase() as Protocol;
+
+  if (!Object.values(Protocol).includes(protocol)) {
+    return NextResponse.json({ error: "Invalid protocol" }, { status: 400 });
+  }
+
   try {
-    await initMoralis();
-    const chain = EvmChain.create(Number(chainId));
-    const res = await Moralis.EvmApi.token.getTokenPrice({ address, chain });
-    const usdPrice = res.toJSON().usdPrice || 0;
+    const service = BalanceServiceRegistry.get(protocol);
+    const usdPrice = await service.getTokenPrice(address, chainId);
     return NextResponse.json({ usdPrice });
   } catch (error) {
     console.error("Error in /api/tokens/price:", error);

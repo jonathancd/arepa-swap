@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { useDebounce } from "use-debounce";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useSwapStore } from "@/features/swap/stores/swapStore";
@@ -9,30 +9,37 @@ import { useNetworkStore } from "@/features/network/stores/networkStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTokenPrice } from "@/features/token/hooks/useTokenPrice";
-import { ChevronDown, ArrowDownUp } from "lucide-react";
+import { ChevronDown, ArrowDownUp, Settings } from "lucide-react";
 import { TokenSelectorModal } from "@/features/token/components/TokenSelectorModal";
 import { useTokenBalanceFromStore } from "@/features/token/hooks/useTokenBalanceFromStore";
 import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
 import { IToken } from "@/features/token/types/IToken";
 import { useSwapEstimation } from "../hooks/useSwapEstimation";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { SWAP_MODES } from "@/features/swap/constants/swapModes";
 
 export function SwapForm() {
   const availableNetworks = useAvailableNetworks();
-  const { account, setIsConnectModalOpen } = useWalletStore();
-  const { config, setFromToken, setToToken, swapTokens } = useSwapStore();
+  const { account, protocol, setIsConnectModalOpen } = useWalletStore();
+  const {
+    config,
+    swapMode,
+    setFromToken,
+    setToToken,
+    swapTokens,
+    setSwapMode,
+  } = useSwapStore();
   const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
 
   const [amountIn, setAmountIn] = useState("");
   const [editingField, setEditingField] = useState<"in" | "out" | null>(null);
   const [debouncedAmountIn] = useDebounce(amountIn, 400);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const tokenIn = config.fromToken;
   const tokenOut = config.toToken;
-  console.log({ tokenIn });
-  console.log({ tokenOut });
   const priceIn = useTokenPrice(tokenIn);
   const priceOut = useTokenPrice(tokenOut);
-  console.log({ priceIn, priceOut });
   const tokenInBalance = Number(useTokenBalanceFromStore(tokenIn));
 
   const insufficientBalance = useMemo(() => {
@@ -52,13 +59,14 @@ export function SwapForm() {
     account,
   });
 
+  console.log("Calculando el tokenOutUsd...");
+  console.log({ priceOut, estimatedOut });
   const tokenOutUsd =
     priceOut && estimatedOut
       ? (parseFloat(estimatedOut) * priceOut).toFixed(2)
       : null;
   console.log({ estimatedOut });
   console.log(tokenOutUsd);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // Elimina el useEffect de estimación y polling, ya no es necesario aquí
 
@@ -117,6 +125,41 @@ export function SwapForm() {
 
   return (
     <div className="max-w-md mx-auto p-4 space-y-4 bg-muted rounded-xl shadow">
+      <div>
+        <p>protocol: {protocol}</p>
+        <p>net: {selectedNetwork?.name}</p>
+      </div>
+      {/* Settings Button */}
+      <div className="flex justify-end">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSettingsOpen(true)}
+          title="Swap settings"
+        >
+          <Settings />
+        </Button>
+      </div>
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="max-w-xs p-4 space-y-4">
+          <h3 className="text-lg font-semibold mb-2">Modo de swap</h3>
+          <div className="flex flex-col gap-2">
+            {SWAP_MODES.map((mode) => (
+              <Button
+                key={mode.key}
+                variant={swapMode === mode.key ? "default" : "outline"}
+                onClick={() => {
+                  setSwapMode(mode.key);
+                  setSettingsOpen(false);
+                }}
+                className="w-full justify-start"
+              >
+                {mode.label} ({mode.description})
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
       {/* From */}
       <div>
         <label className="block text-sm font-medium">

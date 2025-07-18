@@ -8,12 +8,19 @@ import { SwapAdapterFactory } from "../adapters/swapAdapterFactory";
 export function useSwapDefaults() {
   const { connectedWallet } = useWalletStore();
   const { selectedNetwork } = useNetworkStore();
-  const { setFromToken, setToToken, setNetworks, setSwapAdapter } =
+  const { setFromToken, setToToken, setNetworks, setSwapAdapter, swapMode } =
     useSwapStore();
 
   useEffect(() => {
     const init = async () => {
       if (!selectedNetwork) return;
+
+      // Si el modo es ethers o 1inch, reinicia los tokens y redes si hay cross-chain
+      if ((swapMode === "ethers" || swapMode === "1inch") && selectedNetwork) {
+        setFromToken(null);
+        setToToken(null);
+        setNetworks(selectedNetwork);
+      }
 
       const defaults = getDefaultTokensForNetwork(selectedNetwork.id);
       if (!defaults) return;
@@ -29,7 +36,9 @@ export function useSwapDefaults() {
         const adapter = await SwapAdapterFactory({
           network: selectedNetwork,
           signer,
+          swapMode,
         });
+        console.log("seteando adapter...");
         setSwapAdapter(adapter);
       }
     };
@@ -42,5 +51,6 @@ export function useSwapDefaults() {
     setToToken,
     setNetworks,
     setSwapAdapter,
+    swapMode,
   ]);
 }

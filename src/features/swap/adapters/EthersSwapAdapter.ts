@@ -2,8 +2,9 @@ import { BaseSwapAdapter } from "./BaseSwapAdapter";
 import { SwapParams, SwapEstimate, ApproveParams } from "../types/ISwapAdapter";
 import { Contract, formatUnits, parseUnits } from "ethers";
 import UniswapV2RouterABI from "../abi/UniswapV2Router.json";
+import { recommendedPaths } from "../utils/recommendedPaths";
 
-export class UniswapV2SwapAdapter extends BaseSwapAdapter {
+export class EthersSwapAdapter extends BaseSwapAdapter {
   private router: Contract;
   private providerOrSigner: any;
   constructor(
@@ -22,10 +23,32 @@ export class UniswapV2SwapAdapter extends BaseSwapAdapter {
   async estimateSwap(params: SwapParams): Promise<SwapEstimate> {
     const { amountIn, tokenIn, tokenOut, path } = params;
 
-    const route = path ?? [tokenIn.address, tokenOut.address];
+    // Buscar path recomendado
+    let route = path ?? [tokenIn.address, tokenOut.address];
+    const chainId = tokenIn.chainId;
+    const key = `${tokenIn.address.toLowerCase()}-${tokenOut.address.toLowerCase()}`;
+    if (recommendedPaths[chainId] && recommendedPaths[chainId][key]) {
+      route = recommendedPaths[chainId][key];
+    }
+
     const amountInParsed = parseUnits(amountIn, tokenIn.decimals);
 
+    // LOG para depuración
+    console.log("[estimateSwap]", {
+      amountIn,
+      tokenIn: tokenIn.symbol,
+      tokenOut: tokenOut.symbol,
+      path: route,
+      amountInParsed: amountInParsed.toString(),
+      router: this.router.address,
+    });
+
     const amountsOut = await this.router.getAmountsOut(amountInParsed, route);
+    console.log(
+      "[estimateSwap] amountsOut:",
+      (amountsOut as any[]).map((a: any) => a.toString())
+    );
+
     const amountOut = amountsOut[amountsOut.length - 1];
     const amountOutFormatted = formatUnits(amountOut, tokenOut.decimals);
 

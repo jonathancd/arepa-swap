@@ -6,4 +6,5 @@ export interface IBalanceService {
     tokens: (NormalizedToken & { quote: number | null })[];
     totalUSD: number;
   }>;
+  getTokenPrice(address: string, chainId: string | number): Promise<number>;
 }

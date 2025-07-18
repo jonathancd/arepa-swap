@@ -12,7 +12,8 @@ export const EvmNetworkRegistry: IEvmNetwork[] = [
     protocol: Protocol.EVM,
     chainIdHex: "0x1",
     evmChain: EvmChain.ETHEREUM,
-    rpcUrl: "https://rpc.ankr.com/eth",
+    // rpcUrl: "https://rpc.ankr.com/eth",
+    rpcUrl: "https://rpc.ankr.com/eth/" + process.env.NEXT_PUBLIC_RPC_ETHEREUM,
     routerAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", // Uniswap V2
     explorerUrl: "https://etherscan.io",
   },
@@ -46,7 +47,8 @@ export const EvmNetworkRegistry: IEvmNetwork[] = [
     chainIdHex: "0xa4b1",
     evmChain: EvmChain.ARBITRUM,
     rpcUrl: "https://arb1.arbitrum.io/rpc",
-    routerAddress: "0x1b02da8cb0d097eb8d57a175b88c7d8b47997506", // SushiSwap V2
+    // routerAddress: "0x1b02da8cb0d097eb8d57a175b88c7d8b47997506", // SushiSwap V2
+    routerAddress: "0x8cFe327CEc66d1C090Dd72bd0FF11d690C33a2Eb", // PancakeSwap V2
     explorerUrl: "https://arbiscan.io",
   },
   {

@@ -13,7 +13,7 @@ import { NormalizedToken } from "@/features/token/types/Token";
 export class EvmBalanceService implements IBalanceService {
   async getTokens(address: string): Promise<NormalizedToken[]> {
     await initMoralis();
-
+    console.log("FRONTEND O SERVIDOR...");
     const results = await Promise.allSettled(
       EvmNetworkRegistry.map(async (network) => {
         const res = await Moralis.EvmApi.token.getWalletTokenBalances({
@@ -68,5 +68,16 @@ export class EvmBalanceService implements IBalanceService {
     );
 
     return { tokens: enriched, totalUSD };
+  }
+
+  async getTokenPrice(
+    address: string,
+    chainId: string | number
+  ): Promise<number> {
+    await initMoralis();
+    const { EvmChain } = await import("@moralisweb3/common-evm-utils");
+    const chain = EvmChain.create(Number(chainId));
+    const res = await Moralis.EvmApi.token.getTokenPrice({ address, chain });
+    return res.toJSON().usdPrice || 0;
   }
 }

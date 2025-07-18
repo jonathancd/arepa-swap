@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
 import { walletRegistry } from "../registry/walletRegistry";
+import { Protocol } from "@/features/protocols/constants/Protocol";
 
 export function useRestoreWallet() {
   const initialized = useRef(false);

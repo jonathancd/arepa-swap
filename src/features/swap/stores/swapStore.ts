@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { IToken } from "@/features/token/types/IToken";
 import { INetwork } from "@/features/protocols/types/INetwork";
 import { ISwapAdapter } from "../types/ISwapAdapter";
+import { SWAP_MODES } from "../constants/swapModes";
+import type { ISwapMode } from "../types/ISwapMode";
 
 export type SwapConfig = {
   fromToken: IToken | null;
@@ -13,13 +15,14 @@ export type SwapConfig = {
 
 interface SwapStore {
   config: SwapConfig;
-
-  setFromToken: (token: IToken) => void;
-  setToToken: (token: IToken) => void;
+  swapMode: ISwapMode;
+  setFromToken: (token: IToken | null) => void;
+  setToToken: (token: IToken | null) => void;
   setNetworks: (from: INetwork, to?: INetwork) => void;
   setSwapAdapter: (adapter: ISwapAdapter | null) => void;
   swapTokens: () => void;
   resetTokens: () => void;
+  setSwapMode: (mode: ISwapMode) => void;
 }
 
 export const useSwapStore = create<SwapStore>((set, get) => ({
@@ -30,10 +33,11 @@ export const useSwapStore = create<SwapStore>((set, get) => ({
     toNetwork: null,
     swapAdapter: null,
   },
+  swapMode: SWAP_MODES[0]?.key,
 
   setFromToken: (token) => {
     const { config } = get();
-    if (token.address === config.toToken?.address) {
+    if (token && token.address === config.toToken?.address) {
       set((state) => ({
         config: { ...state.config, fromToken: token, toToken: null },
       }));
@@ -44,7 +48,7 @@ export const useSwapStore = create<SwapStore>((set, get) => ({
 
   setToToken: (token) => {
     const { config } = get();
-    if (token.address === config.fromToken?.address) {
+    if (token && token.address === config.fromToken?.address) {
       set((state) => ({
         config: { ...state.config, toToken: null },
       }));
@@ -86,4 +90,6 @@ export const useSwapStore = create<SwapStore>((set, get) => ({
       },
     }));
   },
+
+  setSwapMode: (mode) => set({ swapMode: mode }),
 }));

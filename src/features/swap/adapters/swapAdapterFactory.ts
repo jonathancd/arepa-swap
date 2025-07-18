@@ -1,24 +1,41 @@
 import { Protocol } from "@/features/protocols/constants/Protocol";
 import { ISwapAdapter } from "../types/ISwapAdapter";
-import { UniswapV2SwapAdapter } from "./UniswapV2SwapAdapter";
+import { EthersSwapAdapter } from "./EthersSwapAdapter";
+import { OneInchSwapAdapter } from "./OneInchSwapAdapter";
+import { LiFiSwapAdapter } from "./LiFiSwapAdapter";
 import { IEvmNetwork } from "@/features/protocols/evm/types/IEvmNetwork";
+import { SwapAdapterRegistry } from "./SwapAdapterRegistry";
 
 // Nota: Si crecen mucho los protocolos, se puede hacer un mapa de creadores
 
 export async function SwapAdapterFactory(params: {
   network: IEvmNetwork;
   signer?: any;
+  swapMode?: string;
+  protocol?: string;
 }): Promise<ISwapAdapter | null> {
-  const { network, signer } = params;
+  const { network, signer, swapMode = "ethers", protocol = "evm" } = params;
   let providerOrSigner = signer;
   if (!providerOrSigner) {
-    // Import dinámico para optimizar el bundle (opcional)
     const { JsonRpcProvider } = await import("ethers");
     providerOrSigner = new JsonRpcProvider(network.rpcUrl);
   }
-  if (network.protocol === Protocol.EVM) {
-    return new UniswapV2SwapAdapter(network.routerAddress, providerOrSigner);
+  // Usamos el registry para obtener el adapter correcto
+  const protocolRegistry = (SwapAdapterRegistry as any)[protocol];
+  if (!protocolRegistry) return null;
+  const AdapterClass = protocolRegistry[swapMode] || protocolRegistry.default;
+  // EVM: pasa routerAddress y providerOrSigner si es necesario
+  if (protocol === Protocol.EVM) {
+    if (swapMode === "ethers") {
+      return new AdapterClass(network.routerAddress, providerOrSigner);
+    }
+    if (swapMode === "1inch") {
+      return new AdapterClass(network.id);
+    }
+    if (swapMode === "lifi") {
+      return new AdapterClass();
+    }
   }
-  // Aquí puedes agregar más protocolos en el futuro
+  // Otros protocolos: lógica futura
   return null;
 }

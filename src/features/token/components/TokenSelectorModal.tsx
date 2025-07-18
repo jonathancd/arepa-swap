@@ -12,6 +12,8 @@ import { TokenRegistry } from "../registry/tokenRegistry";
 import { IToken } from "../types/IToken";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { formatNumber } from "@/lib/formatters/formatNumber";
+import { useSwapStore } from "@/features/swap/stores/swapStore";
+import { getDefaultTokensForNetwork } from "@/features/token/utils/getDefaultTokens";
 
 interface TokenSelectorModalProps {
   open: boolean;
@@ -42,6 +44,9 @@ export function TokenSelectorModal({
   const { overviewTokenBalances } = useWalletStore();
   const { selectedNetwork } = useNetworkStore();
   const availableNetworks = useAvailableNetworks();
+  const { swapMode, setFromToken, setToToken } = useSwapStore();
+  const { setSelectedNetwork, selectedNetwork: currentSelectedNetwork } =
+    useNetworkStore();
 
   const defaultChainId = selectedNetwork?.id ?? availableNetworks[0]?.id ?? 1;
 
@@ -88,9 +93,53 @@ export function TokenSelectorModal({
   );
   const combinedTokens = [...walletTokensMapped, ...localTokensFiltered];
 
-  const tokensToShow = query.length >= 2 ? searchedTokens : combinedTokens;
+  // Decide qué tokens mostrar
+  let tokensToShow: IToken[] = [];
+  if (query.length >= 2) {
+    tokensToShow = searchedTokens;
+    // Si el modo es ethers o 1inch, filtra los resultados por la red activa
+    if (swapMode !== "lifi") {
+      tokensToShow = tokensToShow.filter((t) => t.chainId === selectedChainId);
+    }
+  } else {
+    tokensToShow = combinedTokens;
+  }
 
   const handleSelect = (token: IToken) => {
+    // Si estamos en modo Li.Fi, permitimos tokens de diferentes redes
+    if (swapMode === "lifi") {
+      if (
+        (editingField === "in" && currentToToken?.address === token.address) ||
+        (editingField === "out" && currentFromToken?.address === token.address)
+      ) {
+        onSwapTokens();
+      } else {
+        onSelect(token);
+      }
+      onClose();
+      return;
+    }
+
+    // Para ethers/1inch: si el token es de otra red, cambiamos la red y los tokens
+    if (token.chainId !== selectedNetwork?.id) {
+      // Cambia la red activa
+      setSelectedNetwork(
+        availableNetworks.find((n) => n.id === token.chainId)!
+      );
+      // Obtén los tokens por defecto de la nueva red
+      const defaults = getDefaultTokensForNetwork(token.chainId);
+      if (editingField === "in") {
+        setFromToken(token);
+        setToToken(defaults?.tokenOut ?? null);
+      } else {
+        setFromToken(defaults?.tokenIn ?? null);
+        setToToken(token);
+      }
+      onClose();
+      return;
+    }
+
+    // Si el token es de la misma red, comportamiento normal
     if (
       (editingField === "in" && currentToToken?.address === token.address) ||
       (editingField === "out" && currentFromToken?.address === token.address)
@@ -114,6 +163,9 @@ export function TokenSelectorModal({
     return selected ? [selected, ...others] : availableNetworks;
   }, [availableNetworks, selectedChainId]);
 
+  // Decide si mostrar el selector de red
+  const showNetworkSelector = swapMode === "lifi";
+
   if (!isClient) return <div />;
 
   return (
@@ -127,27 +179,29 @@ export function TokenSelectorModal({
           onChange={(e) => setQuery(e.target.value)}
         />
 
-        <div className="flex gap-4 justify-center py-2 border-b border-border">
-          {orderedNetworks.map((network) => (
-            <button
-              key={network.id}
-              onClick={() => setSelectedChainId(network.id)}
-              className={`w-[36px] h-[36px] rounded-full p-[2px] border-2 ${
-                selectedChainId === network.id
-                  ? "border-primary"
-                  : "border-transparent"
-              }`}
-            >
-              <Image
-                src={network.icon}
-                alt={network.name}
-                width={32}
-                height={32}
-                className="rounded-full"
-              />
-            </button>
-          ))}
-        </div>
+        {showNetworkSelector && (
+          <div className="flex gap-4 justify-center py-2 border-b border-border">
+            {orderedNetworks.map((network) => (
+              <button
+                key={network.id}
+                onClick={() => setSelectedChainId(network.id)}
+                className={`w-[36px] h-[36px] rounded-full p-[2px] border-2 ${
+                  selectedChainId === network.id
+                    ? "border-primary"
+                    : "border-transparent"
+                }`}
+              >
+                <Image
+                  src={network.icon}
+                  alt={network.name}
+                  width={32}
+                  height={32}
+                  className="rounded-full"
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="max-h-[400px] overflow-y-auto space-y-2">
           {loading && (

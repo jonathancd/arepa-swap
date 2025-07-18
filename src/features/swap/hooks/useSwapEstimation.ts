@@ -40,6 +40,7 @@ export function useSwapEstimation({
       setEstimatedOut(result.amountOutFormatted);
     } catch (err) {
       setError("Failed to estimate swap");
+      console.log(err);
       setEstimatedOut(null);
     } finally {
       setEstimating(false);
