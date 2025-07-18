@@ -22,12 +22,12 @@ export class UniswapV2SwapAdapter extends BaseSwapAdapter {
   async estimateSwap(params: SwapParams): Promise<SwapEstimate> {
     const { amountIn, tokenIn, tokenOut, path } = params;
 
-    const route = path ?? [tokenIn, tokenOut];
-    const amountInParsed = parseUnits(amountIn, 18); // ajustar a decimals reales si es necesario
+    const route = path ?? [tokenIn.address, tokenOut.address];
+    const amountInParsed = parseUnits(amountIn, tokenIn.decimals);
 
     const amountsOut = await this.router.getAmountsOut(amountInParsed, route);
     const amountOut = amountsOut[amountsOut.length - 1];
-    const amountOutFormatted = formatUnits(amountOut, 18);
+    const amountOutFormatted = formatUnits(amountOut, tokenOut.decimals);
 
     return {
       amountOut,
@@ -52,9 +52,9 @@ export class UniswapV2SwapAdapter extends BaseSwapAdapter {
 
   async executeSwap(params: SwapParams): Promise<string> {
     const { account, tokenIn, tokenOut, amountIn, slippage, path } = params;
-    const route = path ?? [tokenIn, tokenOut];
+    const route = path ?? [tokenIn.address, tokenOut.address];
 
-    const amountInParsed = parseUnits(amountIn, 18);
+    const amountInParsed = parseUnits(amountIn, tokenIn.decimals);
     const amountsOut = await this.router.getAmountsOut(amountInParsed, route);
 
     const amountOut = amountsOut[amountsOut.length - 1];

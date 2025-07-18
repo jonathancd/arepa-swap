@@ -4,7 +4,6 @@ import { getTokenPriceInUsd } from "../services/getTokenPriceInUsd";
 
 export function useTokenPrice(token: IToken | null) {
   const [price, setPrice] = useState<number | null>(null);
-
   useEffect(() => {
     if (!token) return;
 

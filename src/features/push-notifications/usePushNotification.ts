@@ -34,9 +34,9 @@ export function usePushNotification() {
       console.log("response", response);
       if (!response.ok) throw new Error("Request failed");
 
-      console.log("✅ Test notification sent");
+      console.log("Test notification sent");
     } catch (error) {
-      console.error("❌ Failed to send test notification:", error);
+      console.error("Failed to send test notification:", error);
     }
   };
 

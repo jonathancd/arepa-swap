@@ -10,7 +10,7 @@ export function NetworkSelectorDialog({ open, onOpenChange, ...props }: Props) {
         className="
           !max-w-sm
           w-full border-0
-          sm:h-[196px]
+          sm:h-[320px]
           flex flex-col
           min-h-0
           p-0

@@ -1,20 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useDebounce } from "use-debounce";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useSwapStore } from "@/features/swap/stores/swapStore";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSwapDefaults } from "../hooks/useSwapDefaults";
 import { useTokenPrice } from "@/features/token/hooks/useTokenPrice";
 import { ChevronDown, ArrowDownUp } from "lucide-react";
 import { TokenSelectorModal } from "@/features/token/components/TokenSelectorModal";
 import { useTokenBalanceFromStore } from "@/features/token/hooks/useTokenBalanceFromStore";
 import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
 import { IToken } from "@/features/token/types/IToken";
+import { useSwapEstimation } from "../hooks/useSwapEstimation";
 
 export function SwapForm() {
   const availableNetworks = useAvailableNetworks();
@@ -23,18 +23,16 @@ export function SwapForm() {
   const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
 
   const [amountIn, setAmountIn] = useState("");
-  const [estimatedOut, setEstimatedOut] = useState<string | null>(null);
-  const [estimating, setEstimating] = useState(false);
   const [editingField, setEditingField] = useState<"in" | "out" | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [debouncedAmountIn] = useDebounce(amountIn, 400);
 
   const tokenIn = config.fromToken;
   const tokenOut = config.toToken;
-
+  console.log({ tokenIn });
+  console.log({ tokenOut });
   const priceIn = useTokenPrice(tokenIn);
   const priceOut = useTokenPrice(tokenOut);
-
+  console.log({ priceIn, priceOut });
   const tokenInBalance = Number(useTokenBalanceFromStore(tokenIn));
 
   const insufficientBalance = useMemo(() => {
@@ -45,48 +43,24 @@ export function SwapForm() {
   const tokenInUsd =
     priceIn && amountIn ? (parseFloat(amountIn) * priceIn).toFixed(2) : null;
 
+  // Mover aquí el hook de estimación
+  const { estimatedOut, estimating, error } = useSwapEstimation({
+    swapAdapter: config.swapAdapter,
+    tokenIn,
+    tokenOut,
+    amountIn: debouncedAmountIn,
+    account,
+  });
+
   const tokenOutUsd =
     priceOut && estimatedOut
       ? (parseFloat(estimatedOut) * priceOut).toFixed(2)
       : null;
+  console.log({ estimatedOut });
+  console.log(tokenOutUsd);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    const estimate = async () => {
-      if (
-        !config.swapAdapter ||
-        !tokenIn?.address ||
-        !tokenOut?.address ||
-        !debouncedAmountIn
-      ) {
-        console.log(config);
-        console.log(tokenIn?.address);
-        console.log(tokenOut?.address);
-        console.log(debouncedAmountIn);
-        return;
-      }
-
-      try {
-        setEstimating(true);
-        setError(null);
-        const result = await config.swapAdapter.estimateSwap({
-          account: account ?? "",
-          tokenIn: tokenIn.address,
-          tokenOut: tokenOut.address,
-          amountIn: debouncedAmountIn,
-          slippage: 0.005,
-        });
-        setEstimatedOut(result.amountOutFormatted);
-      } catch (err) {
-        console.error("Estimate error", err);
-        setError("Failed to estimate swap");
-        setEstimatedOut(null);
-      } finally {
-        setEstimating(false);
-      }
-    };
-
-    estimate();
-  }, [config.swapAdapter, tokenIn, tokenOut, debouncedAmountIn, account]);
+  // Elimina el useEffect de estimación y polling, ya no es necesario aquí
 
   const handleSwap = async () => {
     if (!config.swapAdapter || !account || !tokenIn || !tokenOut || !amountIn)
@@ -95,8 +69,8 @@ export function SwapForm() {
     try {
       const tx = await config.swapAdapter.executeSwap({
         account,
-        tokenIn: tokenIn.address,
-        tokenOut: tokenOut.address,
+        tokenIn,
+        tokenOut,
         amountIn,
         slippage: 0.005,
       });
@@ -111,7 +85,7 @@ export function SwapForm() {
   const handleSwapTokens = () => {
     swapTokens();
     setAmountIn("");
-    setEstimatedOut(null);
+    // estimatedOut se limpia automáticamente por el hook al cambiar tokens
   };
 
   const handleTokenClick = (field: "in" | "out") => setEditingField(field);
@@ -159,7 +133,7 @@ export function SwapForm() {
                 {tokenIn?.icon && (
                   <Image
                     src={tokenIn.icon}
-                    alt={tokenIn.symbol}
+                    alt={tokenIn.displaySymbol ?? tokenIn.symbol}
                     width={24}
                     height={24}
                     className="rounded-full"
@@ -167,7 +141,7 @@ export function SwapForm() {
                 )}
               </div>
               <div className="hidden sm:inline-flex truncate">
-                {tokenIn?.displaySymbol ?? "-"}
+                {tokenIn?.displaySymbol ?? tokenIn?.symbol}
               </div>
               <div className="ml-auto text-white">
                 <ChevronDown />
@@ -220,7 +194,7 @@ export function SwapForm() {
                 {tokenOut?.icon && (
                   <Image
                     src={tokenOut.icon}
-                    alt={tokenOut.symbol}
+                    alt={tokenOut.displaySymbol ?? tokenOut.symbol}
                     width={24}
                     height={24}
                     className="rounded-full"
@@ -228,7 +202,7 @@ export function SwapForm() {
                 )}
               </div>
               <div className="hidden sm:inline-flex truncate">
-                {tokenOut?.displaySymbol ?? "-"}
+                {tokenOut?.displaySymbol ?? tokenOut?.symbol}
               </div>
               <div className="ml-auto text-white">
                 <ChevronDown />
@@ -239,7 +213,7 @@ export function SwapForm() {
               Estimated: {estimating ? "..." : estimatedOut ?? "-"}{" "}
               {tokenOut?.symbol}
               <hr />
-              USD: {tokenOutUsd ? ` (~$${tokenOutUsd} USD)` : ""}
+              USD: {tokenOutUsd ? ` (~$${tokenOutUsd} USD)` : " (N/A)"}
             </div>
           </div>
         </div>

@@ -37,10 +37,6 @@ export class EvmBalanceService implements IBalanceService {
     const tokens = await this.getTokens(address);
 
     const priceResults = await Promise.allSettled(
-      // tokens.map((token) =>
-      //   fetchTokenPrice(token.contract_address, token.network)
-      // )
-
       tokens.map((token) => {
         const network = EvmNetworkRegistry.find(
           (n) => n.name === token.network

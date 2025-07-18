@@ -1,7 +1,9 @@
+import { IToken } from "@/features/token/types/IToken";
+
 export interface SwapParams {
   account: string;
-  tokenIn: string;
-  tokenOut: string;
+  tokenIn: IToken;
+  tokenOut: IToken;
   amountIn: string;
   slippage: number;
   path?: string[];
@@ -15,7 +17,6 @@ export interface SwapEstimate {
 }
 
 export interface ApproveParams {
-  account: string;
   tokenAddress: string;
   spender: string;
   amount: string;

@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "coin-images.coingecko.com",
         pathname: "/**", // permite todas las rutas
       },
+      {
+        protocol: "https",
+        hostname: "logo.moralis.io",
+        pathname: "/**", // permite todas las rutas
+      },
     ],
   },
 };

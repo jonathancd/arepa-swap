@@ -48,7 +48,13 @@ export function NetworkSelectorLayout({
             onClick={() => handleSelect(net.id)}
             className="w-full flex items-center gap-3 p-3 bg-surface hover:bg-muted transition-colors hover:opacity-[0.6]"
           >
-            <Image src={net.icon} alt={net.name} width={24} height={24} />
+            <Image
+              className="rounded-full"
+              src={net.icon}
+              alt={net.name}
+              width={24}
+              height={24}
+            />
             <span className="text-sm font-medium">{net.name}</span>
           </motion.button>
         ))}
