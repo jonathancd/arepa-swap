@@ -1,23 +1,31 @@
 "use client";
 
 import Image from "next/image";
+import { ChevronDown, ArrowDownUp, Settings, Wallet } from "lucide-react";
 import { useMemo, useState, useRef } from "react";
+import { motion } from "framer-motion";
 import { useDebounce } from "use-debounce";
-import { useWalletStore } from "@/features/wallet/stores/walletStore";
-import { useSwapStore } from "@/features/swap/stores/swapStore";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@radix-ui/react-tooltip";
+
+import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useTokenPrice } from "@/features/token/hooks/useTokenPrice";
-import { ChevronDown, ArrowDownUp, Settings } from "lucide-react";
+import { SWAP_MODES } from "@/features/swap/constants/swapModes";
+import { useSwapStore } from "@/features/swap/stores/swapStore";
 import { TokenSelectorModal } from "@/features/token/components/TokenSelectorModal";
 import { useTokenBalanceFromStore } from "@/features/token/hooks/useTokenBalanceFromStore";
-import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
 import { IToken } from "@/features/token/types/IToken";
+import { useTokenPrice } from "@/features/token/hooks/useTokenPrice";
+import { useWalletStore } from "@/features/wallet/stores/walletStore";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useSwapEstimation } from "../hooks/useSwapEstimation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { SWAP_MODES } from "@/features/swap/constants/swapModes";
-import { motion } from "framer-motion";
+import { formatNumber } from "@/lib/formatters/formatNumber";
 
 export function SwapForm() {
   const availableNetworks = useAvailableNetworks();
@@ -47,6 +55,7 @@ export function SwapForm() {
   const priceIn = useTokenPrice(tokenIn);
   const priceOut = useTokenPrice(tokenOut);
   const tokenInBalance = Number(useTokenBalanceFromStore(tokenIn));
+  const tokenOutBalance = Number(useTokenBalanceFromStore(tokenOut));
 
   const insufficientBalance = useMemo(() => {
     if (!tokenIn || !amountIn || !tokenInBalance) return false;
@@ -186,7 +195,30 @@ export function SwapForm() {
         </Dialog>
         {/* Token In */}
         <div className="flex flex-col gap-4">
-          <label className="block text-xs font-medium">From</label>
+          <label className="flex flex-row justify-between text-xs font-semibold">
+            From
+            {account && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex flex-row items-center gap-1 cursor-pointer">
+                      <Wallet className="w-[14px]" />
+                      {formatNumber(tokenInBalance, { decimals: 6 })}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    align="center"
+                    className="border border-primary text-xs font-normal bg-muted bg-surface text-white p-2 rounded"
+                  >
+                    {formatNumber(tokenInBalance, {
+                      decimals: tokenIn?.decimals,
+                    })}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </label>
           <div
             className={`relative flex items-center w-full h-[80px] bg-background p-2 rounded transition-all duration-200 ${
               isTokenInFocused ? "ring-2 ring-primary ring-offset-0" : ""
@@ -197,7 +229,7 @@ export function SwapForm() {
                 <Button
                   onClick={() => handleTokenClick("in")}
                   variant="ghost"
-                  className="w-85px h-[50px] pl-[36px] pr-[12px] py-4 relative border-0 rounded text-base font-semibold hover:opacity-[0.6]"
+                  className="w-[125px] h-[50px] pl-[36px] pr-[12px] py-4 relative border-0 rounded text-base font-semibold hover:opacity-[0.6]"
                 >
                   <div className="absolute left-0 w-[32px]">
                     {tokenIn?.icon && (
@@ -263,7 +295,30 @@ export function SwapForm() {
 
         {/* Token Out */}
         <div className="flex flex-col gap-4">
-          <label className="block text-xs font-medium">To</label>
+          <label className="flex flex-row justify-between text-xs font-semibold">
+            To
+            {account && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex flex-row items-center gap-1 cursor-pointer">
+                      <Wallet className="w-[14px]" />
+                      {formatNumber(tokenOutBalance, { decimals: 6 })}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    align="center"
+                    className="border border-primary text-xs font-normal bg-muted bg-surface text-white p-2 rounded"
+                  >
+                    {formatNumber(tokenOutBalance, {
+                      decimals: tokenOut?.decimals,
+                    })}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </label>
           <div
             className={`relative flex items-center w-full h-[80px] bg-background p-2 rounded transition-all duration-200 ${
               isTokenOutFocused ? "ring-2 ring-primary ring-offset-0" : ""
@@ -274,7 +329,7 @@ export function SwapForm() {
                 <Button
                   onClick={() => handleTokenClick("out")}
                   variant="outline"
-                  className="w-85px h-[50px] pl-[36px] pr-[12px] py-4 relative border-0 rounded text-base font-semibold hover:opacity-[0.6]"
+                  className="w-[125px] h-[50px] pl-[36px] pr-[12px] py-4 relative border-0 rounded text-base font-semibold hover:opacity-[0.6]"
                 >
                   <div className="absolute left-0 w-[32px]">
                     {tokenOut?.icon && (
@@ -309,10 +364,7 @@ export function SwapForm() {
                 />
               </div>
 
-              {/* <div className="text-xs text-right text-muted-foreground mt-2">
-              Estimated: {estimating ? "..." : estimatedOut ?? "-"}{" "}
-              {tokenOut?.symbol}
-            </div> */}
+              {/*{estimating ? "..." : estimatedOut ?? "-"}*/}
             </div>
 
             <div className="absolute bottom-4 right-7 text-xs text-muted-foreground">

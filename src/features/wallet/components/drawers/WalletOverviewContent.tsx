@@ -68,7 +68,7 @@ export function WalletOverviewContent() {
               <TooltipContent
                 side="right"
                 align="center"
-                className="text-xs font-normal bg-muted bg-surface text-white p-2 rounded"
+                className="border border-primary text-xs font-normal bg-muted bg-surface text-white p-2 rounded"
               >
                 Copy address
               </TooltipContent>
