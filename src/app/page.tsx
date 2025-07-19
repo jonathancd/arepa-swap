@@ -1,6 +1,9 @@
 import { SwapForm } from "@/features/swap/components/SwapForm";
-import Image from "next/image";
 
 export default function Home() {
-  return <SwapForm />;
+  return (
+    <div className="flex flex-row items-center justify-center h-[calc(100vh-69px)]">
+      <SwapForm />
+    </div>
+  );
 }

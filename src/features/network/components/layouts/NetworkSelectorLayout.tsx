@@ -7,12 +7,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { XIcon } from "lucide-react";
+import { useNetworkStore } from "../../stores/networkStore";
 
 export function NetworkSelectorLayout({
   isMobile,
   networks,
   handleSelect,
 }: Props) {
+  const { selectedNetwork } = useNetworkStore();
   return (
     <motion.div
       initial={{ y: isMobile ? "100%" : "0%", opacity: 0 }}
@@ -46,7 +48,9 @@ export function NetworkSelectorLayout({
           <motion.button
             key={net.id}
             onClick={() => handleSelect(net.id)}
-            className="w-full flex items-center gap-3 p-3 bg-surface hover:bg-muted transition-colors hover:opacity-[0.6]"
+            className={`w-full flex items-center gap-3 p-3 bg-surface hover:bg-muted transition-colors hover:opacity-[0.6] ${
+              selectedNetwork?.id === net.id ? "text-primary font-semibold" : ""
+            }`}
           >
             <Image
               className="rounded-full"
@@ -55,7 +59,15 @@ export function NetworkSelectorLayout({
               width={24}
               height={24}
             />
-            <span className="text-sm font-medium">{net.name}</span>
+            <span
+              className={`text-sm font-medium ${
+                selectedNetwork?.id === net.id
+                  ? "text-primary font-semibold"
+                  : ""
+              }`}
+            >
+              {net.name}
+            </span>
           </motion.button>
         ))}
       </div>

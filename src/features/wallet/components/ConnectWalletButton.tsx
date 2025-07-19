@@ -10,7 +10,7 @@ export function ConnectWalletButton() {
     <>
       <Button
         onClick={() => setIsConnectModalOpen(true)}
-        className="bg-primary text-black hover:bg-primary-hover font-semibold"
+        className="bg-primary text-black hover:bg-primary-hover font-semibold rounded-full"
       >
         Connect Wallet
       </Button>

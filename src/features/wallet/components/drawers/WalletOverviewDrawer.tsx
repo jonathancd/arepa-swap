@@ -64,32 +64,7 @@ export function WalletOverviewDrawer() {
               </button>
             </DialogClose>
           </div>
-          {/* <div
-            className={clsx(
-              "flex items-center justify-between px-4 py-3 border-b border-[var(--drawer-border-color)] rounded-tl-[var(--radius)] bg-[var(--drawer-header-bg)] text-[var(--drawer-header-text)]",
-              isMobile && "sr-only"
-            )}
-          >
-            <DialogTitle className="text-lg font-semibold">
-              Wallet Overview
-            </DialogTitle>
-
-            <DialogClose asChild>
-              <button
-                className="text-muted-foreground hover:opacity-[0.6]"
-                aria-label="Close wallet overview"
-                autoFocus
-              >
-                <XIcon className="h-5 w-5" />
-              </button>
-            </DialogClose>
-          </div> */}
           <div className="flex flex-col flex-1 min-h-0 pt-4">
-            {/* 
-            <DialogDescription className="text-xs text-center pb-4">
-              An overview of your wallet's current holdings and balances.
-            </DialogDescription>
-            */}
             <WalletOverviewContent />
           </div>
           <div className="px-4 pb-4">

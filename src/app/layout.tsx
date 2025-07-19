@@ -72,7 +72,7 @@ export default function RootLayout({
             <PushNotificationInitializer />
           </>
           <Navbar />
-          <main className="flex-1 p-4">{children}</main>
+          <main className="flex flex-col flex-1">{children}</main>
           <>
             <NetworkSelectorManager />
             <WalletConnectDialog />
