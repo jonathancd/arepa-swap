@@ -11,18 +11,21 @@ export function useSyncNetworkWithWallet() {
   const previousWalletRef = useRef<typeof connectedWallet | null>(null);
 
   useEffect(() => {
-    console.log("useSyncNetworkWithWallet");
     if (!connectedWallet) return;
 
     // Si no hay red seleccionada, usamos la red por defecto del protocolo
     if (!selectedNetwork && protocol) {
       const defaultNetwork = getDefaultNetworkByProtocol(protocol);
-      if (defaultNetwork) setSelectedNetwork(defaultNetwork);
+      if (defaultNetwork) {
+        setSelectedNetwork(defaultNetwork);
+      }
     }
 
     const updateNetwork = async () => {
       const network = await connectedWallet.getNetwork?.();
-      if (network) setSelectedNetwork(network);
+      if (network) {
+        setSelectedNetwork(network);
+      }
     };
 
     const handler = () => updateNetwork();

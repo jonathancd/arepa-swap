@@ -5,72 +5,87 @@ import { walletRegistry } from "../registry/walletRegistry";
 import { ITokenBalance } from "../types/ITokenBalance";
 
 interface WalletStore {
-  connectedWallet: BaseWalletAdapter | null;
-  protocol: Protocol | null; // Nuevo: para saber si es EVM o Solana
-
+  // Estado del wallet
   account: string | null;
+  connectedWallet: BaseWalletAdapter | null;
+  protocol: Protocol | null;
   balance: string | null;
 
-  overviewTokenBalances: ITokenBalance[];
-  overviewTotalUSD: number;
-
+  // Estado de la UI
   isConnectModalOpen: boolean;
   isOverviewModalOpen: boolean;
+
+  // Datos del wallet
+  overviewTokenBalances: ITokenBalance[];
+  overviewTotalUSD: number;
   isOverviewLoading: boolean;
 
-  connectWallet: (walletId: string) => Promise<void>;
-  disconnectWallet: () => void;
-
+  // Actions
   setAccount: (account: string | null) => void;
-  setBalance: (balance: string | null) => void;
   setConnectedWallet: (wallet: BaseWalletAdapter | null) => void;
   setProtocol: (protocol: Protocol | null) => void;
-
-  setOverviewTokenBalances: (tokens: ITokenBalance[]) => void;
+  setBalance: (balance: string | null) => void;
+  setIsConnectModalOpen: (open: boolean) => void;
+  setIsOverviewModalOpen: (open: boolean) => void;
+  setOverviewTokenBalances: (balances: ITokenBalance[]) => void;
   setOverviewTotalUSD: (total: number) => void;
+  setIsOverviewLoading: (loading: boolean) => void;
 
-  closeOverviewModal: () => void;
+  // UI Actions
   openOverviewModal: () => void;
-
-  setIsConnectModalOpen: (value: boolean) => void;
-  setIsOverviewLoading: (value: boolean) => void;
+  closeOverviewModal: () => void;
+  disconnectWallet: () => void;
+  connectWallet: (walletId: string) => Promise<void>;
 }
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
+  // Estado del wallet
+  account: null,
   connectedWallet: null,
   protocol: null,
+  balance: null,
 
-  account: "",
-  balance: "",
-
-  overviewTokenBalances: [],
-  overviewTotalUSD: 0,
-
+  // Estado de la UI
   isConnectModalOpen: false,
   isOverviewModalOpen: false,
+
+  // Datos del wallet
+  overviewTokenBalances: [],
+  overviewTotalUSD: 0,
   isOverviewLoading: false,
 
-  connectWallet: async (walletId) => {
+  // Actions
+  setAccount: (account) => set({ account }),
+  setConnectedWallet: (wallet) => set({ connectedWallet: wallet }),
+  setProtocol: (protocol) => set({ protocol }),
+  setBalance: (balance) => set({ balance }),
+  setIsConnectModalOpen: (open) => set({ isConnectModalOpen: open }),
+  setIsOverviewModalOpen: (open) => set({ isOverviewModalOpen: open }),
+  setOverviewTokenBalances: (balances) =>
+    set({ overviewTokenBalances: balances }),
+  setOverviewTotalUSD: (total) => set({ overviewTotalUSD: total }),
+  setIsOverviewLoading: (loading) => set({ isOverviewLoading: loading }),
+
+  // UI Actions
+  openOverviewModal: () => set({ isOverviewModalOpen: true }),
+  closeOverviewModal: () => set({ isOverviewModalOpen: false }),
+  disconnectWallet: () => {
+    set({
+      connectedWallet: null,
+      account: null,
+      balance: null,
+      protocol: null,
+      isOverviewModalOpen: false,
+    });
+    localStorage.removeItem("wallet-provider");
+  },
+  connectWallet: async (walletId: string) => {
     const wallet = walletRegistry.get(walletId);
     if (!wallet || !wallet.isAvailable()) return;
 
     await wallet.connect();
     const account = await wallet.getAccount();
     const protocol = wallet.protocol;
-
-    // Antes se calculaba el balance directamente aquí según el protocolo.
-    // Eso violaba el principio de Inversión de Dependencias (D de SOLID),
-    // ya que este store (módulo de alto nivel) dependía de lógica de bajo nivel (EVM, ethers).
-    // Ahora se delega al adapter correspondiente con `wallet.getBalance(account)`,
-    // lo que permite mantener el store desacoplado del protocolo.
-
-    // let balance: string | null = null;
-    // // EVM: obtener balance con ethers
-    // if (protocol === Protocol.EVM && account) {
-    //   const provider = new BrowserProvider(window.ethereum);
-    //   const rawBalance = await provider.getBalance(account);
-    //   balance = parseFloat(formatEther(rawBalance)).toFixed(4);
-    // }
 
     set({
       connectedWallet: wallet,
@@ -80,24 +95,4 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
     localStorage.setItem("wallet-provider", wallet.id);
   },
-  disconnectWallet: () => {
-    set({
-      connectedWallet: null,
-      account: null,
-      balance: null,
-      protocol: null,
-    });
-
-    localStorage.removeItem("wallet-provider");
-  },
-  setAccount: (account) => set({ account }),
-  setBalance: (balance) => set({ balance }),
-  setConnectedWallet: (connectedWallet) => set({ connectedWallet }),
-  setProtocol: (protocol) => set({ protocol }),
-  setOverviewTokenBalances: (tokens) => set({ overviewTokenBalances: tokens }),
-  setOverviewTotalUSD: (total) => set({ overviewTotalUSD: total }),
-  closeOverviewModal: () => set({ isOverviewModalOpen: false }),
-  openOverviewModal: () => set({ isOverviewModalOpen: true }),
-  setIsConnectModalOpen: (value: boolean) => set({ isConnectModalOpen: value }),
-  setIsOverviewLoading: (value: boolean) => set({ isOverviewLoading: value }),
 }));

@@ -59,7 +59,13 @@ export const useSwapStore = create<SwapStore>((set, get) => ({
 
   setNetworks: (from, to = from) => {
     set((state) => ({
-      config: { ...state.config, fromNetwork: from, toNetwork: to },
+      config: {
+        ...state.config,
+        fromNetwork: from,
+        toNetwork: to,
+        // Limpiar el adapter cuando cambia la red para forzar recreación
+        swapAdapter: null,
+      },
     }));
   },
 
@@ -76,7 +82,8 @@ export const useSwapStore = create<SwapStore>((set, get) => ({
         toToken: state.config.fromToken,
         fromNetwork: state.config.toNetwork,
         toNetwork: state.config.fromNetwork,
-        swapAdapter: state.config.swapAdapter, // Mantener adapter si es cross-chain-ready
+        // Limpiar el adapter para forzar recreación con la nueva configuración
+        swapAdapter: null,
       },
     }));
   },

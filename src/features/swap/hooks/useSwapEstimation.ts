@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ISwapAdapter } from "../types/ISwapAdapter";
 import { IToken } from "@/features/token/types/IToken";
 
@@ -20,16 +20,42 @@ export function useSwapEstimation({
   const [estimatedOut, setEstimatedOut] = useState<string | null>(null);
   const [estimating, setEstimating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   const estimate = async () => {
-    if (!swapAdapter || !tokenIn?.address || !tokenOut?.address || !amountIn) {
+    console.log("[useSwapEstimation] Starting estimation:", {
+      hasSwapAdapter: !!swapAdapter,
+      tokenIn: tokenIn?.symbol,
+      tokenOut: tokenOut?.symbol,
+      amountIn,
+    });
+
+    // Validar datos requeridos
+    if (!swapAdapter || !tokenIn?.address || !tokenOut?.address) {
+      console.log(
+        "[useSwapEstimation] Missing required data, skipping estimation"
+      );
       setEstimatedOut(null);
+      setError(null);
       return;
     }
+
+    // Validar que tenemos un monto válido
+    if (!amountIn || parseFloat(amountIn) <= 0) {
+      setEstimatedOut(null);
+      setError(null);
+      return;
+    }
+
     try {
       setEstimating(true);
       setError(null);
+
+      console.log("[useSwapEstimation] Estimating OUT from IN:", {
+        tokenIn: tokenIn.symbol,
+        tokenOut: tokenOut.symbol,
+        amountIn,
+      });
+
       const result = await swapAdapter.estimateSwap({
         account: account ?? "",
         tokenIn,
@@ -37,10 +63,15 @@ export function useSwapEstimation({
         amountIn,
         slippage: 0.005,
       });
+
       setEstimatedOut(result.amountOutFormatted);
+      console.log(
+        "[useSwapEstimation] Estimation result:",
+        result.amountOutFormatted
+      );
     } catch (err) {
+      console.error("[useSwapEstimation] Estimation error:", err);
       setError("Failed to estimate swap");
-      console.log(err);
       setEstimatedOut(null);
     } finally {
       setEstimating(false);
@@ -48,16 +79,27 @@ export function useSwapEstimation({
   };
 
   useEffect(() => {
-    estimate(); // Primera estimación inmediata
-    if (pollingRef.current) clearInterval(pollingRef.current);
-    if (swapAdapter && tokenIn && tokenOut && amountIn) {
-      pollingRef.current = setInterval(estimate, 8000); // cada 8 segundos
+    // Solo estimar si tenemos datos válidos y un monto > 0
+    if (
+      swapAdapter &&
+      tokenIn?.address &&
+      tokenOut?.address &&
+      amountIn &&
+      parseFloat(amountIn) > 0
+    ) {
+      estimate();
+    } else {
+      // Limpiar estimaciones si no hay datos válidos
+      setEstimatedOut(null);
+      setEstimating(false);
+      setError(null);
     }
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [swapAdapter, tokenIn, tokenOut, amountIn, account]);
+  }, [swapAdapter, tokenIn?.address, tokenOut?.address, amountIn, account]);
 
-  return { estimatedOut, estimating, error, forceEstimate: estimate };
+  return {
+    estimatedOut,
+    estimating,
+    error,
+    forceEstimate: estimate,
+  };
 }

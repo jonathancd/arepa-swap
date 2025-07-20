@@ -10,7 +10,4 @@ export function useAvailableNetworks(): INetwork[] {
     (net) =>
       net.protocol.toLocaleLowerCase() === fallbackProtocol.toLocaleLowerCase()
   );
-
-  // if (!protocol) return [];
-  // return GlobalNetworkRegistry.filter((net) => net.protocol === protocol);
 }

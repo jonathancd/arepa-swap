@@ -1,8 +1,5 @@
 import { Protocol } from "@/features/protocols/constants/Protocol";
 import { ISwapAdapter } from "../types/ISwapAdapter";
-import { EthersSwapAdapter } from "./EthersSwapAdapter";
-import { OneInchSwapAdapter } from "./OneInchSwapAdapter";
-import { LiFiSwapAdapter } from "./LiFiSwapAdapter";
 import { IEvmNetwork } from "@/features/protocols/evm/types/IEvmNetwork";
 import { SwapAdapterRegistry } from "./SwapAdapterRegistry";
 
@@ -15,18 +12,30 @@ export async function SwapAdapterFactory(params: {
   protocol?: string;
 }): Promise<ISwapAdapter | null> {
   const { network, signer, swapMode = "ethers", protocol = "evm" } = params;
+
   let providerOrSigner = signer;
   if (!providerOrSigner) {
     const { JsonRpcProvider } = await import("ethers");
     providerOrSigner = new JsonRpcProvider(network.rpcUrl);
   }
-  // Usamos el registry para obtener el adapter correcto
+
   const protocolRegistry = (SwapAdapterRegistry as any)[protocol];
-  if (!protocolRegistry) return null;
+  if (!protocolRegistry) {
+    return null;
+  }
+
   const AdapterClass = protocolRegistry[swapMode] || protocolRegistry.default;
+  if (!AdapterClass) {
+    return null;
+  }
+
   // EVM: pasa routerAddress y providerOrSigner si es necesario
   if (protocol === Protocol.EVM) {
     if (swapMode === "ethers") {
+      if (!network.routerAddress) {
+        return null;
+      }
+
       return new AdapterClass(network.routerAddress, providerOrSigner);
     }
     if (swapMode === "1inch") {
@@ -36,6 +45,10 @@ export async function SwapAdapterFactory(params: {
       return new AdapterClass();
     }
   }
-  // Otros protocolos: lógica futura
+
   return null;
 }
+
+// Notas
+// si la network no tiene router address debemos bloquear la app.. manejo de errores
+// la manera en la que se retorna el adapter con IFs no estoy seguro.. debe haber una mejor manera..

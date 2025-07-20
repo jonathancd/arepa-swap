@@ -6,7 +6,6 @@ export function useWalletOverview() {
   const { account, protocol } = useWalletStore();
 
   useEffect(() => {
-    console.log("useWalletOverview");
     if (account && protocol) {
       loadWalletOverviewIntoStore(account, protocol);
     }

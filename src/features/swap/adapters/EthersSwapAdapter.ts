@@ -12,12 +12,28 @@ export class EthersSwapAdapter extends BaseSwapAdapter {
     providerOrSigner: any // Puede ser un signer o un provider
   ) {
     super();
+    console.log("[EthersSwapAdapter] Constructor called with:", {
+      routerAddress,
+      providerOrSigner: !!providerOrSigner,
+    });
+
+    if (!routerAddress) {
+      console.error("[EthersSwapAdapter] Router address is undefined or empty");
+      throw new Error("Router address is required");
+    }
+
     this.providerOrSigner = providerOrSigner;
     this.router = new Contract(
       routerAddress,
       UniswapV2RouterABI,
       providerOrSigner
     );
+
+    console.log("[EthersSwapAdapter] Router contract created:", {
+      address: this.router.address,
+      abi: UniswapV2RouterABI.length,
+      routerAddress,
+    });
   }
 
   async estimateSwap(params: SwapParams): Promise<SwapEstimate> {
@@ -40,23 +56,39 @@ export class EthersSwapAdapter extends BaseSwapAdapter {
       tokenOut: tokenOut.symbol,
       path: route,
       amountInParsed: amountInParsed.toString(),
-      router: this.router.address,
+      router: this.router?.address || "UNDEFINED",
+      chainId,
+      key,
+      hasRecommendedPath: !!(
+        recommendedPaths[chainId] && recommendedPaths[chainId][key]
+      ),
     });
 
-    const amountsOut = await this.router.getAmountsOut(amountInParsed, route);
-    console.log(
-      "[estimateSwap] amountsOut:",
-      (amountsOut as any[]).map((a: any) => a.toString())
-    );
+    try {
+      const amountsOut = await this.router.getAmountsOut(amountInParsed, route);
+      console.log(
+        "[estimateSwap] amountsOut:",
+        (amountsOut as any[]).map((a: any) => a.toString())
+      );
 
-    const amountOut = amountsOut[amountsOut.length - 1];
-    const amountOutFormatted = formatUnits(amountOut, tokenOut.decimals);
+      const amountOut = amountsOut[amountsOut.length - 1];
+      const amountOutFormatted = formatUnits(amountOut, tokenOut.decimals);
 
-    return {
-      amountOut,
-      amountOutFormatted,
-      route,
-    };
+      return {
+        amountOut,
+        amountOutFormatted,
+        route,
+      };
+    } catch (error) {
+      console.error("[estimateSwap] Error:", error);
+      console.error("[estimateSwap] Router address:", this.router.address);
+      console.error("[estimateSwap] Route:", route);
+      console.error(
+        "[estimateSwap] Amount in parsed:",
+        amountInParsed.toString()
+      );
+      throw error;
+    }
   }
 
   async approve(params: ApproveParams): Promise<boolean> {

@@ -19,9 +19,6 @@ import { WalletOverviewDrawer } from "@/features/wallet/components/drawers/Walle
 import { WalletConnectDialog } from "@/features/wallet/components/modals/WalletConnectDialog";
 import { NetworkSelectorManager } from "@/features/network/components/manager/NetworkSelectorManager";
 
-import { PushNotificationInitializer } from "@/features/push-notifications/PushNotificationInitializer";
-import { WalletInitializer } from "@/features/wallet/components/WalletInitializer";
-import { SwapInitializer } from "@/features/swap/components/SwapInitializer";
 import { AppInitializer } from "@/components/layout/AppInitializer";
 
 const sourGummy = Sour_Gummy({
@@ -63,13 +60,9 @@ export default function RootLayout({
       suppressContentEditableWarning
     >
       <body className="flex flex-col min-h-screen bg-background">
-        {/* text-foreground  */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <>
             <AppInitializer />
-            <WalletInitializer />
-            <SwapInitializer />
-            <PushNotificationInitializer />
           </>
           <Navbar />
           <main className="flex flex-col flex-1">{children}</main>
