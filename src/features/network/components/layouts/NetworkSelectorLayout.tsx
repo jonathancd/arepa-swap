@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { XIcon } from "lucide-react";
+import { ArrowRight, XIcon } from "lucide-react";
 import { useNetworkStore } from "../../stores/networkStore";
 
 export function NetworkSelectorLayout({
@@ -47,27 +47,40 @@ export function NetworkSelectorLayout({
         {networks.map((net) => (
           <motion.button
             key={net.id}
-            onClick={() => handleSelect(net.id)}
-            className={`w-full flex items-center gap-3 p-3 hover:bg-muted transition-colors hover:opacity-[0.6] ${
-              selectedNetwork?.id === net.id ? "text-primary font-semibold" : ""
+            onClick={() =>
+              selectedNetwork?.id !== net.id ? handleSelect(net.id) : undefined
+            }
+            className={`group w-full flex items-center justify-between p-3 hover:bg-[var(--background)] transition-colors hover:opacity-[0.6] ${
+              selectedNetwork?.id === net.id
+                ? "!cursor-default opacity-[0.6] text-primary font-semibold"
+                : ""
             }`}
           >
-            <Image
-              className="rounded-full"
-              src={net.icon}
-              alt={net.name}
-              width={24}
-              height={24}
-            />
-            <span
-              className={`text-sm font-medium ${
-                selectedNetwork?.id === net.id
-                  ? "text-primary font-semibold"
-                  : ""
-              }`}
-            >
-              {net.name}
-            </span>
+            <div className="flex flex-row gap-3">
+              <Image
+                className="rounded-full"
+                src={net.icon}
+                alt={net.name}
+                width={24}
+                height={24}
+              />
+              <span
+                className={`text-sm font-medium ${
+                  selectedNetwork?.id === net.id
+                    ? "text-primary font-semibold"
+                    : ""
+                }`}
+              >
+                {net.name}
+              </span>
+            </div>
+            {selectedNetwork?.id !== net.id ? (
+              <div className="hidden group-hover:inline-flex">
+                <ArrowRight />
+              </div>
+            ) : (
+              ""
+            )}
           </motion.button>
         ))}
       </div>

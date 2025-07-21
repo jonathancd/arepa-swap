@@ -11,7 +11,7 @@ import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
 import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
 import { useSwapStore } from "@/features/swap/stores/swapStore";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useDebounce } from "use-debounce";
 import { useTokenSearch } from "../../hooks/useTokenSearch";
 import { TokenRegistry } from "../../registry/tokenRegistry";
@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { formatNumber } from "@/lib/formatters/formatNumber";
 import { getDefaultTokensForNetwork } from "../../utils/getDefaultTokens";
 import { resolveTokenAddress } from "../../services/resolveTokenAddress";
+import { useTokenList } from "../../hooks/useTokenList";
 
 export function TokenSelectorLayout({
   open,
@@ -130,11 +131,12 @@ export function TokenSelectorLayout({
     }
   };
 
+  // 1. Evita peticiones dobles al abrir el modal
   useEffect(() => {
-    if (open && selectedNetwork?.id) {
+    if (open && selectedNetwork?.id && selectedNetwork.id !== selectedChainId) {
       setSelectedChainId(selectedNetwork.id);
     }
-  }, [open, selectedNetwork]);
+  }, [open, selectedNetwork, selectedChainId]);
 
   const orderedNetworks = useMemo(() => {
     const others = availableNetworks.filter((n) => n.id !== selectedChainId);
@@ -144,6 +146,75 @@ export function TokenSelectorLayout({
 
   // Decide si mostrar el selector de red
   const showNetworkSelector = swapMode === "lifi";
+
+  // Hook para tokens de CoinGecko (solo primera página)
+  const { tokens: tokensFromApi, loading: loadingApi } =
+    useTokenList(selectedChainId);
+
+  // Top tokens: todos los del registry
+  const topTokens = TokenRegistry[selectedChainId] || [];
+
+  // Token nativo (el que tiene isNative: true)
+  const nativeToken = topTokens.find((t) => t.isNative);
+
+  // Evitar duplicados: tokens ya mostrados en topTokens y wallet
+  const topAddresses = new Set(topTokens.map((t) => t.address?.toLowerCase()));
+  const walletAddresses = new Set(
+    walletTokens.map((t) => t.contract_address?.toLowerCase())
+  );
+  const nativeAddress = nativeToken?.address?.toLowerCase();
+
+  // 2. Mejora la búsqueda: filtra tokens de CoinGecko ya cargados
+  const filteredTokensFromApi = useMemo(() => {
+    if (!query) return tokensFromApi;
+    return tokensFromApi.filter(
+      (t) =>
+        t.symbol.toLowerCase().includes(query.toLowerCase()) ||
+        t.name?.toLowerCase().includes(query.toLowerCase())
+    );
+  }, [tokensFromApi, query]);
+
+  // Listado principal: nativo primero, luego wallet tokens (sin duplicar nativo), luego tokens de CoinGecko (sin duplicar los anteriores)
+  console.log({ nativeToken });
+  console.log({ walletTokens });
+  console.log({ tokensFromApi });
+
+  // 3. Ajusta el filtro de filteredTokensToShow
+  const filteredTokensToShow = [
+    ...(nativeToken ? [nativeToken] : []),
+    ...walletTokens.filter(
+      (t) =>
+        nativeAddress && t.contract_address?.toLowerCase() !== nativeAddress
+    ),
+    ...filteredTokensFromApi.filter((t) => {
+      // Permite tokens sin address (nativos), pero evita duplicados
+      const addr = t.address?.toLowerCase() || "";
+      if (nativeAddress && addr === nativeAddress) return false;
+      if (topAddresses.has(addr)) return false;
+      if (walletAddresses.has(addr)) return false;
+      // Si no tiene address, solo mostrar si no es el nativo
+      if (!t.address && nativeToken && t.symbol === nativeToken.symbol)
+        return false;
+      return true;
+    }),
+  ];
+
+  // Función para saber si un token está activo
+  const isActive = (token: IToken) => {
+    console.log({ token });
+    if (!token) return false;
+    if (editingField === "in") {
+      return token.address
+        ? token.address.toLowerCase() ===
+            currentFromToken?.address?.toLowerCase()
+        : token.symbol === currentFromToken?.symbol;
+    } else if (editingField === "out") {
+      return token.address
+        ? token.address.toLowerCase() === currentToToken?.address?.toLowerCase()
+        : token.symbol.toLowerCase() === currentToToken?.symbol.toLowerCase();
+    }
+    return false;
+  };
 
   return (
     <motion.div
@@ -173,41 +244,81 @@ export function TokenSelectorLayout({
         </DialogClose>
       </div>
 
+      {showNetworkSelector && (
+        <div className="flex gap-4 justify-center py-2 border-b border-border">
+          {orderedNetworks.map((network) => (
+            <button
+              key={network.id}
+              onClick={() => setSelectedChainId(network.id)}
+              className={`w-[36px] h-[36px] rounded-full p-[2px] border-2 ${
+                selectedChainId === network.id
+                  ? "border-primary"
+                  : "border-transparent"
+              }`}
+            >
+              <Image
+                src={network.icon}
+                alt={network.name}
+                width={32}
+                height={32}
+                className="rounded-full"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="flex flex-col flex-1 min-h-0 bg-surface">
         <div className="p-4">
           <Input
-            className={`bg-background rounded focus:ring-2 focus:ring-primary focus:ring-offset-0`}
+            className={`bg-background border-none rounded focus:ring-2 focus:ring-primary focus:ring-offset-0`}
             placeholder="Search token by name or symbol..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
 
-        {showNetworkSelector && (
-          <div className="flex gap-4 justify-center py-2 border-b border-border">
-            {orderedNetworks.map((network) => (
-              <button
-                key={network.id}
-                onClick={() => setSelectedChainId(network.id)}
-                className={`w-[36px] h-[36px] rounded-full p-[2px] border-2 ${
-                  selectedChainId === network.id
-                    ? "border-primary"
-                    : "border-transparent"
-                }`}
-              >
-                <Image
-                  src={network.icon}
-                  alt={network.name}
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                />
-              </button>
-            ))}
+        {/* Top tokens chips */}
+        {topTokens.length > 0 && (
+          <div className="px-4 my-3">
+            <div className="mb-1 text-xs font-semibold text-muted-foreground">
+              Top tokens
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {topTokens.map((token) => (
+                <button
+                  key={token.address || token.symbol}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-150
+                  ${
+                    isActive(token)
+                      ? "bg-primary text-black border-primary"
+                      : "bg-background !text-white border-border text-foreground opacity-80 hover:opacity-100"
+                  }
+                `}
+                  onClick={() => handleSelect(token)}
+                  disabled={resolving}
+                >
+                  {token.icon?.startsWith("http") ||
+                  token.icon?.startsWith("/") ? (
+                    <Image
+                      src={token.icon}
+                      alt={token.symbol}
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="w-[20px] h-[20px] rounded-full bg-muted" />
+                  )}
+                  <span>{token.displaySymbol ?? token.symbol}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
+
         {/*  */}
-        <div className="flex flex-col flex-1 min-h-0 max-h-[400px] pl-4 overflow-y-auto space-y-2 custom-scrollbar">
+        <div className="bg-green flex flex-col flex-1 min-h-0 max-h-[400px] overflow-y-auto space-y-2 custom-scrollbar">
           {loading && (
             <p className="text-sm text-muted-foreground">Searching...</p>
           )}
@@ -219,12 +330,13 @@ export function TokenSelectorLayout({
           {resolveError && (
             <p className="text-sm text-red-500">{resolveError}</p>
           )}
-          {!loading && !resolving && tokensToShow.length === 0 && (
+          {!loading && !resolving && filteredTokensToShow.length === 0 && (
             <p className="text-sm text-muted-foreground">No tokens found</p>
           )}
+          {/* Renderizado original del listado de tokens, pero usando filteredTokensToShow */}
           {!loading &&
             !resolving &&
-            tokensToShow.map((token) => {
+            filteredTokensToShow.map((token) => {
               // Busca si el token está en la wallet para mostrar balance y quote
               const walletTokenData = walletTokens.find(
                 (t) =>
@@ -234,8 +346,12 @@ export function TokenSelectorLayout({
               return (
                 <button
                   key={token.symbol + (token.address || "noaddr")}
-                  onClick={() => handleSelect(token)}
-                  className="w-full flex items-center justify-between py-2 rounded hover:opacity-[0.6]"
+                  onClick={() =>
+                    !isActive(token) ? handleSelect(token) : () => null
+                  }
+                  className={`group w-full flex items-center justify-between pl-4 py-2 m-0 hover:bg-[var(--background)] hover:opacity-[0.6] ${
+                    isActive(token) ? "!cursor-default opacity-[0.6]" : ""
+                  }`}
                   disabled={resolving}
                 >
                   <div className="flex items-center gap-2">
@@ -253,7 +369,8 @@ export function TokenSelectorLayout({
                     )}
                     <div className="text-left">
                       <div className="font-medium">
-                        {token.displaySymbol ?? token.symbol}
+                        {token.displaySymbol?.toUpperCase() ??
+                          token.symbol?.toUpperCase()}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {token.name}
@@ -276,8 +393,12 @@ export function TokenSelectorLayout({
                           )}
                         </div>
                       </>
+                    ) : !isActive(token) ? (
+                      <div className="hidden group-hover:inline-flex">
+                        <ArrowRight />
+                      </div>
                     ) : (
-                      <ArrowRight />
+                      ""
                     )}
                   </div>
                 </button>

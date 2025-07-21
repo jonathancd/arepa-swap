@@ -10,7 +10,7 @@ export function TokenSelectorDialog({ open, onClose, ...props }: Props) {
         className="
           !max-w-md
           w-full border-0
-          sm:h-[400px]
+          sm:h-[550px]
           flex flex-col
           min-h-0
           p-0
