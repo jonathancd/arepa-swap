@@ -17,15 +17,15 @@ interface TokenSelectorProps {
 export function TokenSelector({
   token,
   networkName,
-  onClick,
   variant = "ghost",
   size = "md",
   disabled = false,
+  onClick,
 }: TokenSelectorProps) {
   const sizeClasses = {
-    sm: "w-[100px] h-[40px] pl-[28px] pr-[8px] py-2 text-sm",
-    md: "w-[125px] h-[50px] pl-[36px] pr-[12px] py-4 text-base",
-    lg: "w-[150px] h-[60px] pl-[44px] pr-[16px] py-5 text-lg",
+    sm: "w-[100px] h-[40px] pr-[8px] py-2 text-sm",
+    md: "w-[125px] h-[50px] pr-[12px] py-4 text-base",
+    lg: "w-[150px] h-[60px] pr-[16px] py-5 text-lg",
   };
 
   const iconSizes = {
@@ -39,7 +39,7 @@ export function TokenSelector({
       onClick={onClick}
       variant={variant}
       disabled={disabled}
-      className={`${sizeClasses[size]} relative border-0 rounded font-semibold hover:opacity-[0.6]`}
+      className={`${sizeClasses[size]} relative border-0 pl-[50px] rounded font-semibold hover:opacity-[0.6]`}
     >
       <div className={`absolute left-0 w-[${iconSizes[size].width}px]`}>
         {token?.icon && (

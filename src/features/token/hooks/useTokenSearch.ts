@@ -8,7 +8,6 @@ interface UseTokenSearchResult {
   error: string | null;
 }
 
-// Declaración de propiedad estática en el namespace del hook
 export function useTokenSearch(
   query: string,
   chainId: number
@@ -17,7 +16,6 @@ export function useTokenSearch(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Inicializa cache solo una vez
   useTokenSearch.cache = useTokenSearch.cache ?? new Map<string, IToken[]>();
   const staticCache = useTokenSearch.cache;
 
@@ -27,7 +25,6 @@ export function useTokenSearch(
     if (!query || query.length < 2) return [];
     return localTokens.filter(
       (token) =>
-        // token.address.toLowerCase().includes(query.toLowerCase()) ||
         token.symbol.toLowerCase().includes(query.toLowerCase()) ||
         token.name?.toLowerCase().includes(query.toLowerCase())
     );
@@ -57,21 +54,35 @@ export function useTokenSearch(
       }
 
       try {
-        // Llama al endpoint backend en vez de usar searchTokenExternally
+        // Llama al endpoint proxy backend
         const res = await fetch(
-          `/api/tokens/search-token?query=${encodeURIComponent(
+          `/api/tokens/search-coingecko?query=${encodeURIComponent(
             query
           )}&chainId=${chainId}`
         );
         if (!res.ok) throw new Error("Failed to fetch tokens");
-        const remoteTokens: IToken[] = await res.json();
+        const data = await res.json();
+        // CoinGecko devuelve { coins: [...] }
+        const remoteTokens: IToken[] = (data.coins || []).map((coin: any) => ({
+          symbol: coin.symbol,
+          name: coin.name,
+          icon: coin.thumb,
+          address: undefined, // No address, se resuelve al seleccionar
+          chainId,
+        }));
+        // Combina locales y remotos, sin duplicar por símbolo
         const all = [...localMatches, ...remoteTokens].filter(
           (token, i, self) =>
             self.findIndex(
-              (t) => t.address.toLowerCase() === token.address.toLowerCase()
+              (t) =>
+                (t.address &&
+                  token.address &&
+                  t.address.toLowerCase() === token.address.toLowerCase()) ||
+                (!t.address &&
+                  !token.address &&
+                  t.symbol.toLowerCase() === token.symbol.toLowerCase())
             ) === i
         );
-
         staticCache.set(key, all);
         setTokens(all);
       } catch (err) {
@@ -88,7 +99,6 @@ export function useTokenSearch(
   return { tokens, loading, error };
 }
 
-// Agrega el namespace para cachear en memoria
 export namespace useTokenSearch {
   export let cache: Map<string, IToken[]>;
 }

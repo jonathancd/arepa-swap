@@ -148,6 +148,7 @@ export function SwapForm() {
 
         <TokenSelectorManager
           open={editingField !== null}
+          isConnected={!!account}
           editingField={editingField}
           currentFromToken={tokenIn}
           currentToToken={tokenOut}
