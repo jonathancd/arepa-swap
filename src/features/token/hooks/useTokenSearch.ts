@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { searchTokenExternally } from "../services/searchTokenExternally";
 import { IToken } from "../types/IToken";
 import { TokenRegistry } from "../registry/tokenRegistry";
 
@@ -58,7 +57,14 @@ export function useTokenSearch(
       }
 
       try {
-        const remoteTokens = await searchTokenExternally(query, chainId);
+        // Llama al endpoint backend en vez de usar searchTokenExternally
+        const res = await fetch(
+          `/api/tokens/search-token?query=${encodeURIComponent(
+            query
+          )}&chainId=${chainId}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch tokens");
+        const remoteTokens: IToken[] = await res.json();
         const all = [...localMatches, ...remoteTokens].filter(
           (token, i, self) =>
             self.findIndex(
@@ -82,7 +88,7 @@ export function useTokenSearch(
   return { tokens, loading, error };
 }
 
-// 🧠 Agrega el namespace para cachear en memoria
+// Agrega el namespace para cachear en memoria
 export namespace useTokenSearch {
   export let cache: Map<string, IToken[]>;
 }

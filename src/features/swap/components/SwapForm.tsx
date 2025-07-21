@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 
 import { SWAP_MODES } from "@/features/swap/constants/swapModes";
 import { useSwapStore } from "@/features/swap/stores/swapStore";
-import { TokenSelectorModal } from "@/features/token/components/TokenSelectorModal";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { TokenInputField } from "./TokenInputField";
@@ -14,6 +13,7 @@ import { SwapButton } from "./SwapButton";
 import { useSwapForm } from "../hooks/useSwapForm";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useInitializationStore } from "@/stores/initializationStore";
+import { TokenSelectorManager } from "@/features/token/components/manager/TokenSelectorManager";
 
 export function SwapForm() {
   const { swapMode, setSwapMode } = useSwapStore();
@@ -60,7 +60,6 @@ export function SwapForm() {
   return (
     <div className="w-full sm:w-[500px] flex flex-col gap-4">
       <div className="w-full mx-auto p-4 space-y-4 bg-surface rounded-xl shadow">
-        {/* Settings Button */}
         <div className="flex justify-end m-0">
           <Button
             variant="ghost"
@@ -147,12 +146,15 @@ export function SwapForm() {
           estimating={estimating}
         />
 
-        <TokenSelectorModal
+        <TokenSelectorManager
           open={editingField !== null}
           editingField={editingField}
           currentFromToken={tokenIn}
           currentToToken={tokenOut}
-          onClose={() => handleTokenClick(null)}
+          onClose={() => {
+            console.log("se debe ejecutar");
+            handleTokenClick(null);
+          }}
           onSelect={handleSelectToken}
           onSwapTokens={handleSwapTokensWithRotation}
         />

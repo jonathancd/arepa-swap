@@ -117,7 +117,7 @@ export function WalletConnectDialog() {
                           Connect your wallet
                         </DialogTitle>
                       </div>
-                      <div className="flex-1 min-h-0 pb-4 overflow-y-auto no-scrollbar">
+                      <div className="flex-1 min-h-0 pb-4 overflow-y-auto custom-scrollbar">
                         <div className="grid grid-cols-3 gap-4 px-4">
                           {wallets.map((wallet) => (
                             <div

@@ -11,10 +11,9 @@ export default function Navbar() {
   return (
     <header className="w-full border-b border-primary bg-surface">
       <nav className="flex items-center justify-between px-4 py-3 md:px-8 md:py-4 max-w-7xl mx-auto">
-        {/* Logo / Title */}
         <Link
           href="/"
-          className="text-2xl font-logo font-bold text-primary hover:text-primary-hover"
+          className="text-md font-logo font-bold text-primary hover:text-primary-hover"
         >
           ArepaSwap
         </Link>

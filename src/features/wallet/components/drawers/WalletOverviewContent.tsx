@@ -105,7 +105,7 @@ export function WalletOverviewContent() {
         <div className="relative flex-1 min-h-0">
           <TabsContent
             value="wallet"
-            className="flex flex-col gap-2 absolute inset-0 pr-1 overflow-auto no-scrollbar"
+            className="flex flex-col gap-2 absolute inset-0 pr-1 overflow-auto custom-scrollbar"
           >
             {isOverviewLoading
               ? Array.from({ length: 5 }).map((_, i) => (

@@ -43,12 +43,12 @@ export function NetworkSelectorLayout({
         </DialogClose>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
+      <div className="flex-1 min-h-0 bg-surface overflow-y-auto custom-scrollbar">
         {networks.map((net) => (
           <motion.button
             key={net.id}
             onClick={() => handleSelect(net.id)}
-            className={`w-full flex items-center gap-3 p-3 bg-surface hover:bg-muted transition-colors hover:opacity-[0.6] ${
+            className={`w-full flex items-center gap-3 p-3 hover:bg-muted transition-colors hover:opacity-[0.6] ${
               selectedNetwork?.id === net.id ? "text-primary font-semibold" : ""
             }`}
           >

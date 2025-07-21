@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
 import { useNetworkStore } from "@/features/network/stores/networkStore";

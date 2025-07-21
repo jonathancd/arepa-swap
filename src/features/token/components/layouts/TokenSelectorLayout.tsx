@@ -1,52 +1,39 @@
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
-import { useDebounce } from "use-debounce";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useTokenSearch } from "../hooks/useTokenSearch";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { ITokenSelectorProps as Props } from "../../types/ITokenSelector";
+import {
+  DialogClose,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { XIcon } from "lucide-react";
+import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
 import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
-import Image from "next/image";
-import { TokenRegistry } from "../registry/tokenRegistry";
-import { IToken } from "../types/IToken";
-import { useWalletStore } from "@/features/wallet/stores/walletStore";
-import { formatNumber } from "@/lib/formatters/formatNumber";
 import { useSwapStore } from "@/features/swap/stores/swapStore";
-import { getDefaultTokensForNetwork } from "@/features/token/utils/getDefaultTokens";
+import { useEffect, useMemo, useState } from "react";
+import { useDebounce } from "use-debounce";
+import { useTokenSearch } from "../../hooks/useTokenSearch";
+import { TokenRegistry } from "../../registry/tokenRegistry";
+import { IToken } from "../../types/IToken";
+import { Input } from "@/components/ui/input";
+import { formatNumber } from "@/lib/formatters/formatNumber";
+import { getDefaultTokensForNetwork } from "../../utils/getDefaultTokens";
 
-interface TokenSelectorModalProps {
-  open: boolean;
-  editingField: "in" | "out" | null;
-  currentFromToken: IToken | null;
-  currentToToken: IToken | null;
-  onClose: () => void;
-  onSelect: (token: IToken) => void;
-  onSwapTokens: () => void;
-}
-
-function useIsClient() {
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => setIsClient(true), []);
-  return isClient;
-}
-
-export function TokenSelectorModal({
+export function TokenSelectorLayout({
   open,
+  isMobile,
   editingField,
   currentFromToken,
   currentToToken,
-  onClose,
   onSelect,
+  onClose,
   onSwapTokens,
-}: TokenSelectorModalProps) {
-  const isClient = useIsClient();
+}: Props) {
   const { overviewTokenBalances } = useWalletStore();
-  const { selectedNetwork } = useNetworkStore();
   const availableNetworks = useAvailableNetworks();
   const { swapMode, setFromToken, setToToken } = useSwapStore();
-  const { setSelectedNetwork, selectedNetwork: currentSelectedNetwork } =
-    useNetworkStore();
+  const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
 
   const defaultChainId = selectedNetwork?.id ?? availableNetworks[0]?.id ?? 1;
 
@@ -106,7 +93,7 @@ export function TokenSelectorModal({
   }
 
   const handleSelect = (token: IToken) => {
-    // Si estamos en modo Li.Fi, permitimos tokens de diferentes redes
+    //     // Si estamos en modo Li.Fi, permitimos tokens de diferentes redes
     if (swapMode === "lifi") {
       if (
         (editingField === "in" && currentToToken?.address === token.address) ||
@@ -119,7 +106,6 @@ export function TokenSelectorModal({
       onClose();
       return;
     }
-
     // Para ethers/1inch: si el token es de otra red, cambiamos la red y los tokens
     if (token.chainId !== selectedNetwork?.id) {
       // Cambia la red activa
@@ -138,7 +124,6 @@ export function TokenSelectorModal({
       onClose();
       return;
     }
-
     // Si el token es de la misma red, comportamiento normal
     if (
       (editingField === "in" && currentToToken?.address === token.address) ||
@@ -166,18 +151,43 @@ export function TokenSelectorModal({
   // Decide si mostrar el selector de red
   const showNetworkSelector = swapMode === "lifi";
 
-  if (!isClient) return <div />;
-
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-4 space-y-4">
-        <h2 className="text-lg font-semibold">Select a token</h2>
+    <motion.div
+      initial={{ y: isMobile ? "100%" : "0%", opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: isMobile ? "100%" : "0%", opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-1 min-h-0 w-full flex-col"
+    >
+      <div className="flex items-center justify-between px-4 py-3 bg-background rounded">
+        <DialogTitle className="text-lg font-semibold">
+          Select a Token
+        </DialogTitle>
 
-        <Input
-          placeholder="Search token by name or symbol..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        <DialogDescription className="sr-only">
+          Select a token for the swap.
+        </DialogDescription>
+
+        <DialogClose asChild>
+          <button
+            className="text-muted-foreground hover:opacity-[0.6]"
+            aria-label="Close"
+            autoFocus
+          >
+            <XIcon className="h-5 w-5" />
+          </button>
+        </DialogClose>
+      </div>
+
+      <div className="flex flex-col flex-1 min-h-0 bg-surface">
+        <div className="p-4">
+          <Input
+            className={`bg-background rounded focus:ring-2 focus:ring-primary focus:ring-offset-0`}
+            placeholder="Search token by name or symbol..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
 
         {showNetworkSelector && (
           <div className="flex gap-4 justify-center py-2 border-b border-border">
@@ -202,8 +212,8 @@ export function TokenSelectorModal({
             ))}
           </div>
         )}
-
-        <div className="max-h-[400px] overflow-y-auto space-y-2">
+        {/*  */}
+        <div className="flex flex-col flex-1 min-h-0 max-h-[400px] overflow-y-auto space-y-2 custom-scrollbar">
           {loading && (
             <p className="text-sm text-muted-foreground">Searching...</p>
           )}
@@ -222,7 +232,7 @@ export function TokenSelectorModal({
                 <button
                   key={token.address}
                   onClick={() => handleSelect(token)}
-                  className="w-full flex items-center justify-between p-2 rounded hover:bg-accent"
+                  className="w-full flex items-center justify-between p-2 rounded hover:opacity-[0.6]"
                 >
                   <div className="flex items-center gap-2">
                     {token.icon?.startsWith("http") ||
@@ -262,7 +272,7 @@ export function TokenSelectorModal({
               );
             })}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </motion.div>
   );
 }

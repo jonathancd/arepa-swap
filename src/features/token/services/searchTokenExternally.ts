@@ -30,6 +30,7 @@ export async function searchTokenExternally(
       )}`
     );
     const searchData = await searchResponse.json();
+    console.log({ searchData });
 
     const coins = (searchData?.coins ?? []) as any[];
     if (!coins.length) return [];
@@ -49,6 +50,7 @@ export async function searchTokenExternally(
         });
 
         const data = response.toJSON()[0];
+        console.log({ data });
         if (!data?.address) continue;
 
         results.push({
@@ -64,7 +66,7 @@ export async function searchTokenExternally(
         continue;
       }
     }
-
+    console.log({ results });
     return results;
   } catch (e) {
     console.error("searchTokenExternally failed:", e);
