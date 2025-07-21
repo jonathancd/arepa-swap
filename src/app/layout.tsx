@@ -65,7 +65,7 @@ export default function RootLayout({
             <AppInitializer />
           </>
           <Navbar />
-          <main className="flex flex-col flex-1">{children}</main>
+          <main className="flex flex-col flex-1 p-4">{children}</main>
           <>
             <NetworkSelectorManager />
             <WalletConnectDialog />

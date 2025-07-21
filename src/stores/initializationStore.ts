@@ -63,6 +63,7 @@ export const useInitializationStore = create<InitializationStore>(
 
     isReady: () => {
       const { protocolInitialized, networkInitialized, walletRestored } = get();
+      console.log({ protocolInitialized, networkInitialized, walletRestored });
       return protocolInitialized && networkInitialized && walletRestored;
     },
 

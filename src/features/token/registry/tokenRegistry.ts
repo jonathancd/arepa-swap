@@ -149,19 +149,19 @@ export const TokenRegistry: Record<number, IToken[]> = {
       isNative: true,
     },
     {
-      symbol: "USDC",
-      name: "USD Coin",
-      address: "0xaf88d065e77c8C2239327C5EDb3A432268e5831",
-      decimals: 6,
-      icon: `${baseIcon}/usdc.png`,
-      chainId: 42161,
-    },
-    {
       symbol: "USDT",
       name: "Tether USD",
       address: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
       decimals: 6,
       icon: `${baseIcon}/usdt.png`,
+      chainId: 42161,
+    },
+    {
+      symbol: "USDC",
+      name: "USD Coin",
+      address: "0xaf88d065e77c8C2239327C5EDb3A432268e5831",
+      decimals: 6,
+      icon: `${baseIcon}/usdc.png`,
       chainId: 42161,
     },
     {

@@ -7,5 +7,4 @@ export const EvmChainIds = {
   AVALANCHE: 43114,
   BASE: 8453,
   SEPOLIA: 11155111,
-  // ...agrega más según necesites
 };

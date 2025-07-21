@@ -11,7 +11,12 @@ export function useSwapDefaults() {
   const { selectedNetwork } = useNetworkStore();
   const { setFromToken, setToToken, setNetworks, setSwapAdapter, swapMode } =
     useSwapStore();
-  const { canProceedToSwap } = useInitializationStore();
+  const {
+    protocolInitialized,
+    networkInitialized,
+    walletRestored,
+    canProceedToSwap,
+  } = useInitializationStore();
 
   useEffect(() => {
     const init = async () => {
@@ -58,14 +63,17 @@ export function useSwapDefaults() {
 
     init();
   }, [
-    connectedWallet,
     account,
+    connectedWallet,
     selectedNetwork,
+    swapMode,
+    protocolInitialized,
+    networkInitialized,
+    walletRestored,
     setFromToken,
     setToToken,
     setNetworks,
     setSwapAdapter,
-    swapMode,
     canProceedToSwap,
   ]);
 }

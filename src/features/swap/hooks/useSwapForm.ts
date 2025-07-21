@@ -8,6 +8,7 @@ import { useTokenPrice } from "@/features/token/hooks/useTokenPrice";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useSwapEstimation } from "./useSwapEstimation";
 import { IToken } from "@/features/token/types/IToken";
+import { formatNumber } from "@/lib/formatters/formatNumber";
 
 export function useSwapForm() {
   const availableNetworks = useAvailableNetworks();
@@ -24,7 +25,6 @@ export function useSwapForm() {
   // Handler para amountIn (tokenOut se limpia automáticamente)
   const setAmountIn = (value: string) => {
     setAmountInRaw(value);
-    // Limpiar tokenOut cuando cambia tokenIn para mostrar 0.00 durante estimación
     setAmountOutRaw("");
   };
 
@@ -36,7 +36,6 @@ export function useSwapForm() {
 
   // Debounce para evitar demasiadas llamadas a la API
   const [debouncedAmountIn] = useDebounce(amountIn, 400);
-  const [debouncedAmountOut] = useDebounce(amountOut, 400);
 
   // Tokens y precios
   const tokenIn = config.fromToken;
@@ -81,7 +80,7 @@ export function useSwapForm() {
 
   // Determinar si el swap está deshabilitado
   const swapDisabled = useMemo(() => {
-    if (!account) return false; // No está conectado, mostrar "Connect Wallet"
+    if (!account) return false;
     if (estimating) return true;
     if (!estimatedOut) return true;
     if (insufficientBalanceIn || insufficientBalanceOut) return true;
@@ -152,9 +151,8 @@ export function useSwapForm() {
 
   // Actualizar amountOut cuando cambia la estimación
   const displayAmountOut = useMemo(() => {
-    // Mostrar el estimado si hay uno disponible
     if (estimatedOut) {
-      return Number(estimatedOut).toFixed(4);
+      return formatNumber(Number(estimatedOut), { decimals: 4 });
     }
     return amountOut;
   }, [estimatedOut, amountOut]);

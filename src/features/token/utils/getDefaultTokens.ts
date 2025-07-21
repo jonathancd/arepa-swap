@@ -1,30 +1,29 @@
 import { TokenRegistry } from "../registry/tokenRegistry";
 import { DefaultSwapTokens } from "../types/IDefaultSwapTokens";
 
-/**
- * Returns default tokenIn and tokenOut for a given network.
- * Tries to use a base token + USDT if available.
- */
 export function getDefaultTokensForNetwork(
   networkId: number
 ): DefaultSwapTokens | null {
   const tokens = TokenRegistry[networkId];
-  if (!tokens || tokens.length < 2) return null;
+  if (!tokens || tokens.length === 0) return null;
 
-  const baseToken =
-    tokens.find((t) =>
-      ["WETH", "WBNB", "MATIC", "ETH"].includes(t.symbol.toUpperCase())
-    ) || tokens[0];
+  const tokenIn = tokens.find((t) => t.isNative) || tokens[0];
 
-  const stable =
-    tokens.find((t) => t.symbol.toUpperCase() === "USDT") || tokens[1];
+  const stableSymbols = ["USDT", "USDC", "DAI"];
+  let tokenOut =
+    tokens.find(
+      (t) =>
+        stableSymbols.includes(t.symbol.toUpperCase()) &&
+        t.symbol !== tokenIn.symbol
+    ) ||
+    tokens.find((t) => t.symbol !== tokenIn.symbol) ||
+    tokens[1] ||
+    tokenIn; // fallback: si solo hay uno
 
-  // Avoid selecting the same token twice
-  const tokenIn = baseToken;
-  const tokenOut =
-    stable.symbol === tokenIn.symbol
-      ? tokens.find((t) => t.symbol !== tokenIn.symbol)!
-      : stable;
+  // Si por alguna razón tokenIn y tokenOut son iguales, busca el siguiente diferente
+  if (tokenOut.symbol === tokenIn.symbol) {
+    tokenOut = tokens.find((t) => t.symbol !== tokenIn.symbol) || tokenIn;
+  }
 
   return { tokenIn, tokenOut };
 }

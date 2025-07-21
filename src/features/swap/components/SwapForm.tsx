@@ -61,7 +61,7 @@ export function SwapForm() {
     <div className="w-full sm:w-[500px] flex flex-col gap-4">
       <div className="w-full mx-auto p-4 space-y-4 bg-surface rounded-xl shadow">
         {/* Settings Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-end m-0">
           <Button
             variant="ghost"
             size="icon"
