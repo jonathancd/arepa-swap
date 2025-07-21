@@ -1,5 +1,6 @@
 import admin from "firebase-admin";
-import serviceAccount from "./firebase-admin.json";
+// import serviceAccount from "./firebase-admin.json";
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS!);
 
 /**
  * This module initializes the Firebase Admin SDK using service account credentials.
