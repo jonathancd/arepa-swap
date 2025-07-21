@@ -1,13 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const { chain = "eth", query = "" } = req.query;
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const chain = Number(searchParams.get("chain"));
+  const query = searchParams.get("query");
 
   if (typeof query !== "string" || query.length < 2) {
-    return res.status(400).json({ error: "Invalid query" });
+    return NextResponse.json({ error: "Invalid query" }, { status: 400 });
   }
 
   try {
@@ -37,9 +37,13 @@ export default async function handler(
       chainId: parseInt(chain.toString()),
     }));
 
-    return res.status(200).json(tokens);
+    // return res.status(200).json(tokens);
+    return NextResponse.json(tokens);
   } catch (error) {
     console.error("Error in /api/search-token:", error);
-    return res.status(500).json({ error: "Failed to search tokens" });
+    return NextResponse.json(
+      { error: "Failed to search tokens" },
+      { status: 500 }
+    );
   }
 }

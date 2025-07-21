@@ -36,24 +36,24 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { token, title, body } = await req.json();
+    // const { token, title, body } = await req.json();
 
-    if (!token || !title || !body) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-    }
+    // if (!token || !title || !body) {
+    //   return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    // }
 
-    await messaging.send({
-      token,
-      notification: {
-        title,
-        body,
-      },
-      webpush: {
-        notification: {
-          icon: "/icon.png",
-        },
-      },
-    });
+    // await messaging.send({
+    //   token,
+    //   notification: {
+    //     title,
+    //     body,
+    //   },
+    //   webpush: {
+    //     notification: {
+    //       icon: "/icon.png",
+    //     },
+    //   },
+    // });
 
     return NextResponse.json({ success: true });
   } catch (error) {

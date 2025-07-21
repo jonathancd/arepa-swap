@@ -3,6 +3,8 @@ import EthereumProvider from "@walletconnect/ethereum-provider";
 import { EvmNetworkRegistry } from "@/features/protocols/evm/constants/evmNetworkRegistry";
 import { Protocol } from "@/features/protocols/constants/Protocol";
 import { IBaseNetwork } from "@/features/protocols/types/IBaseNetwork";
+import { INetwork } from "@/features/protocols/types/INetwork";
+import { Signer } from "ethers";
 
 let provider: EthereumProvider | null = null;
 
@@ -11,6 +13,7 @@ export class WalletConnectAdapter extends BaseWalletAdapter {
   name = "WalletConnect";
   icon = "/icons/wallets/walletconnect.svg";
   group = "more" as const;
+  protocol = Protocol.EVM;
 
   isAvailable(): boolean {
     return true; // Siempre disponible, no depende de extensión
@@ -21,13 +24,13 @@ export class WalletConnectAdapter extends BaseWalletAdapter {
 
     const chainIds = EvmNetworkRegistry.map((net) => net.id);
 
-    provider = await EthereumProvider.init({
-      projectId: "YOUR_PROJECT_ID", // TODO: Reemplazar con tu verdadero Project ID
-      chains: chainIds,
-      showQrModal: true,
-    });
+    // provider = await EthereumProvider.init({
+    //   projectId: "YOUR_PROJECT_ID", // TODO: Reemplazar con tu verdadero Project ID
+    //   chains: chainIds,
+    //   showQrModal: true,
+    // });
 
-    await provider.connect();
+    // await provider.connect();
 
     // Guardar en window sin sobrescribir otros providers
     (window as any).walletconnectProvider = provider;
@@ -47,11 +50,19 @@ export class WalletConnectAdapter extends BaseWalletAdapter {
     return provider.accounts[0];
   }
 
+  async getBalance(aaccount: string): Promise<string | null> {
+    return null;
+  }
+
   // Change imlementation
-  async getNetwork(): Promise<IBaseNetwork | null> {
+  async getNetwork(): Promise<INetwork | null> {
     return null;
     // if (!provider) return null;
     // return `0x${provider.chainId?.toString(16)}`; // hex string
+  }
+
+  async getSigner(): Promise<Signer | null> {
+    return null;
   }
 
   async switchNetwork(chainIdHex: string): Promise<void> {
