@@ -22,14 +22,6 @@ export function useSwapEstimation({
   const [error, setError] = useState<string | null>(null);
 
   const estimate = async () => {
-    console.log("[useSwapEstimation] Starting estimation:", {
-      hasSwapAdapter: !!swapAdapter,
-      tokenIn: tokenIn?.symbol,
-      tokenOut: tokenOut?.symbol,
-      amountIn,
-    });
-
-    // Validar datos requeridos
     if (!swapAdapter || !tokenIn?.address || !tokenOut?.address) {
       console.log(
         "[useSwapEstimation] Missing required data, skipping estimation"
@@ -39,7 +31,6 @@ export function useSwapEstimation({
       return;
     }
 
-    // Validar que tenemos un monto válido
     if (!amountIn || parseFloat(amountIn) <= 0) {
       setEstimatedOut(null);
       setError(null);
@@ -50,12 +41,6 @@ export function useSwapEstimation({
       setEstimating(true);
       setError(null);
 
-      console.log("[useSwapEstimation] Estimating OUT from IN:", {
-        tokenIn: tokenIn.symbol,
-        tokenOut: tokenOut.symbol,
-        amountIn,
-      });
-
       const result = await swapAdapter.estimateSwap({
         account: account ?? "",
         tokenIn,
@@ -65,10 +50,6 @@ export function useSwapEstimation({
       });
 
       setEstimatedOut(result.amountOutFormatted);
-      console.log(
-        "[useSwapEstimation] Estimation result:",
-        result.amountOutFormatted
-      );
     } catch (err) {
       console.error("[useSwapEstimation] Estimation error:", err);
       setError("Failed to estimate swap");
@@ -89,7 +70,6 @@ export function useSwapEstimation({
     ) {
       estimate();
     } else {
-      // Limpiar estimaciones si no hay datos válidos
       setEstimatedOut(null);
       setEstimating(false);
       setError(null);

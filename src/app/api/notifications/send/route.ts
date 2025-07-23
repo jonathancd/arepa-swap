@@ -42,18 +42,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    await messaging.send({
-      token,
-      notification: {
-        title,
-        body,
-      },
-      webpush: {
-        notification: {
-          icon: "/icon.png",
-        },
-      },
-    });
+    // await messaging.send({
+    //   token,
+    //   notification: {
+    //     title,
+    //     body,
+    //   },
+    //   webpush: {
+    //     notification: {
+    //       icon: "/icon.png",
+    //     },
+    //   },
+    // });
 
     return NextResponse.json({ success: true });
   } catch (error) {

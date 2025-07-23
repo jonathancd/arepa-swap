@@ -83,7 +83,6 @@ export function TokenInputField({
                     insufficientBalance ? "text-red-500" : ""
                   }`}
                 >
-                  {insufficientBalance ? 1 : 0}
                   <Wallet className="w-[14px]" />
                   {formatNumber(balance, { decimals: 6 })}
                 </span>

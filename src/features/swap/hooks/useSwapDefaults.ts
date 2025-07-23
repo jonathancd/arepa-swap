@@ -20,12 +20,10 @@ export function useSwapDefaults() {
 
   useEffect(() => {
     const init = async () => {
-      // Esperar a que todo esté inicializado
       if (!canProceedToSwap()) {
         return;
       }
 
-      // Esperar a que el wallet esté completamente inicializado
       if (!selectedNetwork) {
         return;
       }

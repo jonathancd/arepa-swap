@@ -1,3 +1,9 @@
+// NOTA IMPORTANTE:
+// Actualmente, el swapAdapter solo depende de la red (selectedNetwork), el modo (swapMode) y la wallet conectada (connectedWallet).
+// Pero existen protocolos o routers (por ejemplo, algunos DEX agregadores o swaps cross-chain) donde el adapter puede depender también de los tokens seleccionados (tokenIn, tokenOut),
+// ya que el contrato/router puede cambiar según el par de tokens o la ruta óptima.
+// Si en el futuro se implemento algun mecanismo donde el adapter depende de los tokens, habra que recrear el adapter también al cambiar tokenIn/tokenOut.
+
 import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
@@ -9,14 +15,22 @@ import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useSwapEstimation } from "./useSwapEstimation";
 import { IToken } from "@/features/token/types/IToken";
 import { formatNumber } from "@/lib/formatters/formatNumber";
+import { SwapAdapterFactory } from "../adapters/swapAdapterFactory";
 
 export function useSwapForm() {
   const availableNetworks = useAvailableNetworks();
   const { account, setIsConnectModalOpen } = useWalletStore();
-  const { config, setFromToken, setToToken, swapTokens } = useSwapStore();
+  const {
+    config,
+    setFromToken,
+    setToToken,
+    swapTokens,
+    swapMode,
+    setSwapAdapter,
+  } = useSwapStore();
   const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
+  const { connectedWallet } = useWalletStore();
 
-  // Form state
   const [amountIn, setAmountInRaw] = useState("");
   const [amountOut, setAmountOutRaw] = useState("");
   const [editingField, setEditingField] = useState<"in" | "out" | null>(null);
@@ -28,13 +42,11 @@ export function useSwapForm() {
     setAmountOutRaw("");
   };
 
-  // Limpiar inputs cuando cambia la red
   useEffect(() => {
     setAmountInRaw("");
     setAmountOutRaw("");
   }, [selectedNetwork?.id]);
 
-  // Debounce para evitar demasiadas llamadas a la API
   const [debouncedAmountIn] = useDebounce(amountIn, 400);
 
   // Tokens y precios
@@ -94,10 +106,22 @@ export function useSwapForm() {
   ]);
 
   // Handlers
-  const handleSwapTokens = () => {
+  const handleSwapTokens = async () => {
     swapTokens();
     setAmountInRaw("");
     setAmountOutRaw("");
+    // recrea el adapter aquí también
+    if (selectedNetwork) {
+      const signer = connectedWallet
+        ? await connectedWallet.getSigner()
+        : undefined;
+      const adapter = await SwapAdapterFactory({
+        network: selectedNetwork,
+        signer,
+        swapMode,
+      });
+      setSwapAdapter(adapter);
+    }
   };
 
   const handleTokenClick = (field: "in" | "out" | null) => {
@@ -159,6 +183,26 @@ export function useSwapForm() {
 
   // amountIn siempre es lo que el usuario escribe
   const displayAmountIn = amountIn;
+
+  useEffect(() => {
+    let cancelled = false;
+    const setupAdapter = async () => {
+      if (!selectedNetwork) return;
+      const signer = connectedWallet
+        ? await connectedWallet.getSigner()
+        : undefined;
+      const adapter = await SwapAdapterFactory({
+        network: selectedNetwork,
+        signer,
+        swapMode,
+      });
+      if (!cancelled) setSwapAdapter(adapter);
+    };
+    setupAdapter();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedNetwork, swapMode, connectedWallet, setSwapAdapter]);
 
   return {
     amountIn: displayAmountIn,
