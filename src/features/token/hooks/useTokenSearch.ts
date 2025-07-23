@@ -70,7 +70,9 @@ export function useTokenSearch(
           address: undefined, // No address, se resuelve al seleccionar
           chainId,
         }));
-        // Combina locales y remotos, sin duplicar por símbolo
+
+        console.log({ remoteTokens });
+
         const all = [...localMatches, ...remoteTokens].filter(
           (token, i, self) =>
             self.findIndex(
@@ -83,6 +85,9 @@ export function useTokenSearch(
                   t.symbol.toLowerCase() === token.symbol.toLowerCase())
             ) === i
         );
+
+        console.log({ all });
+
         staticCache.set(key, all);
         setTokens(all);
       } catch (err) {
@@ -96,6 +101,8 @@ export function useTokenSearch(
     fetchRemote();
   }, [query, chainId, localMatches, staticCache]);
 
+  console.log("**** ajaaaaaaaaaa ****");
+  console.log({ tokens });
   return { tokens, loading, error };
 }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Simple in-memory cache
+// in-memory cache
 const cache = new Map<string, any>();
 const CACHE_TTL = 60 * 5 * 1000; // 5 minutos
 const cacheTimestamps = new Map<string, number>();
@@ -31,7 +31,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Call CoinGecko
   const url = `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(
     query
   )}`;
@@ -40,8 +39,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "CoinGecko error" }, { status: 500 });
   }
   const data = await res.json();
-
-  // Optionally, you could filter results by chain/platform here if needed
 
   // Save to cache
   cache.set(cacheKey, data);

@@ -6,21 +6,21 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowRight, XIcon } from "lucide-react";
+import { ArrowRight, LoaderCircle, XIcon } from "lucide-react";
 import { useWalletStore } from "@/features/wallet/stores/walletStore";
 import { useNetworkStore } from "@/features/network/stores/networkStore";
 import { useAvailableNetworks } from "@/features/network/hooks/useAvailableNetworks";
 import { useSwapStore } from "@/features/swap/stores/swapStore";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useTokenSearch } from "../../hooks/useTokenSearch";
 import { TokenRegistry } from "../../registry/tokenRegistry";
 import { IToken } from "../../types/IToken";
 import { Input } from "@/components/ui/input";
 import { formatNumber } from "@/lib/formatters/formatNumber";
-import { getDefaultTokensForNetwork } from "../../utils/getDefaultTokens";
 import { resolveTokenAddress } from "../../services/resolveTokenAddress";
 import { useTokenList } from "../../hooks/useTokenList";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function TokenSelectorLayout({
   open,
@@ -35,8 +35,8 @@ export function TokenSelectorLayout({
 }: Props) {
   const { overviewTokenBalances } = useWalletStore();
   const availableNetworks = useAvailableNetworks();
-  const { swapMode, setFromToken, setToToken } = useSwapStore();
-  const { selectedNetwork, setSelectedNetwork } = useNetworkStore();
+  const { swapMode } = useSwapStore();
+  const { selectedNetwork } = useNetworkStore();
 
   const defaultChainId = selectedNetwork?.id ?? availableNetworks[0]?.id ?? 1;
 
@@ -48,6 +48,9 @@ export function TokenSelectorLayout({
     debouncedQuery,
     selectedChainId
   );
+
+  console.log("*****Searched tokens*****");
+  console.log({ searchedTokens });
 
   // Filtra balances de la red activa (por nombre, como en overview)
   const networkName = availableNetworks.find(
@@ -63,7 +66,7 @@ export function TokenSelectorLayout({
       .sort((a, b) => (b.quote ?? 0) - (a.quote ?? 0));
   }, [overviewTokenBalances, networkName]);
 
-  // Mapear a IToken para mostrar en el modal (puedes ajustar según tus props)
+  // Mapear a IToken para mostrar en el modal
   const walletTokensMapped: IToken[] = walletTokens.map((t) => ({
     symbol: t.contract_ticker_symbol,
     displaySymbol: t.contract_ticker_symbol,
@@ -84,19 +87,53 @@ export function TokenSelectorLayout({
   );
   const combinedTokens = [...walletTokensMapped, ...localTokensFiltered];
 
-  // Decide qué tokens mostrar
+  // Top tokens: todos los del registry
+  const topTokens = TokenRegistry[selectedChainId] || [];
+
+  // Token nativo (el que tiene isNative: true)
+  const nativeToken = topTokens.find((t) => t.isNative);
+
+  // Hook para tokens de CoinGecko (solo primera página)
+  const { tokens: tokensFromApi, loading: loadingApi } =
+    useTokenList(selectedChainId);
+
+  // Evitar duplicados: tokens ya mostrados en topTokens y wallet
+  const topAddresses = new Set(topTokens.map((t) => t.address?.toLowerCase()));
+  const walletAddresses = new Set(
+    walletTokens.map((t) => t.contract_address?.toLowerCase())
+  );
+  const nativeAddress = nativeToken?.address?.toLowerCase();
+
   let tokensToShow: IToken[] = [];
   if (query.length >= 2) {
-    tokensToShow = searchedTokens;
-    // Si el modo es ethers o 1inch, filtra los resultados por la red activa
-    if (swapMode !== "lifi") {
-      tokensToShow = tokensToShow.filter((t) => t.chainId === selectedChainId);
-    }
+    tokensToShow = searchedTokens.filter((t) => {
+      const addr = t.address?.toLowerCase() || "";
+      if (nativeAddress && addr === nativeAddress) return false;
+      if (topAddresses.has(addr)) return false;
+      if (walletAddresses.has(addr)) return false;
+      if (!t.address && nativeToken && t.symbol === nativeToken.symbol)
+        return false;
+      return true;
+    });
   } else {
-    tokensToShow = combinedTokens;
+    tokensToShow = [
+      ...(nativeToken ? [nativeToken] : []),
+      ...walletTokens.filter(
+        (t) =>
+          nativeAddress && t.contract_address?.toLowerCase() !== nativeAddress
+      ),
+      ...tokensFromApi.filter((t) => {
+        const addr = t.address?.toLowerCase() || "";
+        if (nativeAddress && addr === nativeAddress) return false;
+        if (topAddresses.has(addr)) return false;
+        if (walletAddresses.has(addr)) return false;
+        if (!t.address && nativeToken && t.symbol === nativeToken.symbol)
+          return false;
+        return true;
+      }),
+    ];
   }
 
-  // Estado para loading de selección remota
   const [resolving, setResolving] = useState(false);
   const [resolveError, setResolveError] = useState<string | null>(null);
 
@@ -131,7 +168,7 @@ export function TokenSelectorLayout({
     }
   };
 
-  // 1. Evita peticiones dobles al abrir el modal
+  // Evita peticiones dobles al abrir el modal
   useEffect(() => {
     if (open && selectedNetwork?.id && selectedNetwork.id !== selectedChainId) {
       setSelectedChainId(selectedNetwork.id);
@@ -147,61 +184,7 @@ export function TokenSelectorLayout({
   // Decide si mostrar el selector de red
   const showNetworkSelector = swapMode === "lifi";
 
-  // Hook para tokens de CoinGecko (solo primera página)
-  const { tokens: tokensFromApi, loading: loadingApi } =
-    useTokenList(selectedChainId);
-
-  // Top tokens: todos los del registry
-  const topTokens = TokenRegistry[selectedChainId] || [];
-
-  // Token nativo (el que tiene isNative: true)
-  const nativeToken = topTokens.find((t) => t.isNative);
-
-  // Evitar duplicados: tokens ya mostrados en topTokens y wallet
-  const topAddresses = new Set(topTokens.map((t) => t.address?.toLowerCase()));
-  const walletAddresses = new Set(
-    walletTokens.map((t) => t.contract_address?.toLowerCase())
-  );
-  const nativeAddress = nativeToken?.address?.toLowerCase();
-
-  // 2. Mejora la búsqueda: filtra tokens de CoinGecko ya cargados
-  const filteredTokensFromApi = useMemo(() => {
-    if (!query) return tokensFromApi;
-    return tokensFromApi.filter(
-      (t) =>
-        t.symbol.toLowerCase().includes(query.toLowerCase()) ||
-        t.name?.toLowerCase().includes(query.toLowerCase())
-    );
-  }, [tokensFromApi, query]);
-
-  // Listado principal: nativo primero, luego wallet tokens (sin duplicar nativo), luego tokens de CoinGecko (sin duplicar los anteriores)
-  console.log({ nativeToken });
-  console.log({ walletTokens });
-  console.log({ tokensFromApi });
-
-  // 3. Ajusta el filtro de filteredTokensToShow
-  const filteredTokensToShow = [
-    ...(nativeToken ? [nativeToken] : []),
-    ...walletTokens.filter(
-      (t) =>
-        nativeAddress && t.contract_address?.toLowerCase() !== nativeAddress
-    ),
-    ...filteredTokensFromApi.filter((t) => {
-      // Permite tokens sin address (nativos), pero evita duplicados
-      const addr = t.address?.toLowerCase() || "";
-      if (nativeAddress && addr === nativeAddress) return false;
-      if (topAddresses.has(addr)) return false;
-      if (walletAddresses.has(addr)) return false;
-      // Si no tiene address, solo mostrar si no es el nativo
-      if (!t.address && nativeToken && t.symbol === nativeToken.symbol)
-        return false;
-      return true;
-    }),
-  ];
-
-  // Función para saber si un token está activo
   const isActive = (token: IToken) => {
-    console.log({ token });
     if (!token) return false;
     if (editingField === "in") {
       return token.address
@@ -278,7 +261,6 @@ export function TokenSelectorLayout({
           />
         </div>
 
-        {/* Top tokens chips */}
         {topTokens.length > 0 && (
           <div className="px-4 my-3">
             <div className="mb-1 text-xs font-semibold text-muted-foreground">
@@ -318,26 +300,32 @@ export function TokenSelectorLayout({
         )}
 
         {/*  */}
-        <div className="bg-green flex flex-col flex-1 min-h-0 max-h-[400px] overflow-y-auto space-y-2 custom-scrollbar">
-          {loading && (
-            <p className="text-sm text-muted-foreground">Searching...</p>
-          )}
+        <div className="flex flex-col flex-1 gap-0.25 min-h-0 max-h-[400px] overflow-y-auto custom-scrollbar">
+          {loading &&
+            Array.from({ length: 7 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[56px] border-b-primary w-full py-0 px-1"
+              >
+                <Skeleton className="h-full w-full" />
+              </div>
+            ))}
           {resolving && (
-            <p className="text-sm text-primary">
-              Resolviendo dirección del token...
+            <p className="flex justify-center py-2">
+              <LoaderCircle className="w-3 h-3 animate-spin" />
             </p>
           )}
           {resolveError && (
             <p className="text-sm text-red-500">{resolveError}</p>
           )}
-          {!loading && !resolving && filteredTokensToShow.length === 0 && (
-            <p className="text-sm text-muted-foreground">No tokens found</p>
+          {!loading && !resolving && tokensToShow.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-2">
+              No tokens found
+            </p>
           )}
-          {/* Renderizado original del listado de tokens, pero usando filteredTokensToShow */}
           {!loading &&
             !resolving &&
-            filteredTokensToShow.map((token) => {
-              // Busca si el token está en la wallet para mostrar balance y quote
+            tokensToShow.map((token) => {
               const walletTokenData = walletTokens.find(
                 (t) =>
                   t.contract_address.toLowerCase() ===
