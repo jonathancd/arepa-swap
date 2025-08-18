@@ -59,7 +59,7 @@ export default function RootLayout({
       className={noto_sans.className}
       suppressContentEditableWarning
     >
-      <body className="flex flex-col min-h-screen bg-background">
+      <body className="flex flex-col min-h-screen bg-background mb-7">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <>
             <AppInitializer />

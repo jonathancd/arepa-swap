@@ -20,8 +20,8 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-2">
-          <ModeToggle />
-          <LangDropdown />
+          {/* <ModeToggle />
+          <LangDropdown /> */}
           <NetworkSelector />
           <WalletButtonManager />
         </div>
